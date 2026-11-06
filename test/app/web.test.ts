@@ -128,6 +128,34 @@ describe("auth", () => {
   });
 });
 
+describe("canonical host (production)", () => {
+  // Regression: visiting www.pundit.chat or the fly.dev address made every write fail the CSRF
+  // check, because only APP_URL's origin was trusted. Now those hosts redirect to APP_URL.
+  const prod = () =>
+    setup({ NODE_ENV: "production", SESSION_SECRET: "x".repeat(40), APP_URL: "https://pundit.chat" }).app;
+
+  it("301-redirects other hosts to APP_URL, keeping path and query", async () => {
+    for (const host of ["www.pundit.chat", "pundit-bulletin.fly.dev"]) {
+      const res = await prod().request(`http://${host}/r/abc?x=1`, { headers: { host } });
+      expect(res.status, host).toBe(301);
+      expect(res.headers.get("location"), host).toBe("https://pundit.chat/r/abc?x=1");
+    }
+  });
+
+  it("serves APP_URL's own host normally and never redirects health checks", async () => {
+    const app = prod();
+    expect((await app.request("http://pundit.chat/healthz", { headers: { host: "pundit.chat" } })).status).toBe(200);
+    const health = await app.request("http://10.0.0.5:3000/healthz", { headers: { host: "10.0.0.5:3000" } });
+    expect(health.status).toBe(200);
+    expect(await health.text()).toBe("ok");
+  });
+
+  it("does not redirect in development", async () => {
+    const res = await setup().app.request("http://localhost:3000/healthz", { headers: { host: "localhost:3000" } });
+    expect(res.status).toBe(200);
+  });
+});
+
 describe("CSRF", () => {
   it("blocks non-GET requests from a foreign origin or without an origin", async () => {
     const { client } = setup();
@@ -136,6 +164,23 @@ describe("CSRF", () => {
     expect(foreign.status).toBe(403);
     expect(await foreign.json()).toMatchObject({ code: "forbidden" });
     expect((await c.req("/api/signup", { json: { email: "a@b.com", password: PASSWORD }, origin: null })).status).toBe(403);
+  });
+
+  it("behind a TLS proxy, accepts the request's own https origin (X-Forwarded-Proto)", async () => {
+    // Regression: Fly forwards https requests as http://, so the "own origin" fallback never matched.
+    const { app } = setup({ TRUST_PROXY: "true" });
+    const post = (proto?: string) =>
+      app.request("http://other.example/api/login", {
+        method: "POST",
+        headers: {
+          origin: "https://other.example",
+          "content-type": "application/json",
+          ...(proto ? { "x-forwarded-proto": proto } : {}),
+        },
+        body: JSON.stringify({ email: "nobody@example.com", password: PASSWORD }),
+      });
+    expect((await post("https")).status).toBe(401); // passed CSRF; just a wrong login
+    expect((await post()).status).toBe(403); // without the header, http:// ≠ https://
   });
 
   it("requires a JSON content type for API writes", async () => {

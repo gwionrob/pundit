@@ -2,7 +2,7 @@
  * The Hono app: JSON API under /api, server-rendered landing (/) and bulletin (/r/:slug) pages,
  * and, in production, the built React app for every other GET.
  */
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { secureHeaders } from "hono/secure-headers";
 import * as coreModule from "../core/index.ts";
@@ -40,11 +40,34 @@ export function createApp(deps: AppDeps) {
 
   app.use(secureHeaders({ contentSecurityPolicy: undefined, crossOriginEmbedderPolicy: false }));
 
+  // The URL the browser actually used. Behind a TLS-terminating proxy (Fly) the request
+  // arrives as http://, so trust X-Forwarded-Proto when TRUST_PROXY is set.
+  const publicOrigin = (c: Context<Env>) => {
+    const url = new URL(c.req.url);
+    const proto = config.TRUST_PROXY ? c.req.header("x-forwarded-proto")?.split(",")[0]?.trim() : undefined;
+    if (proto === "https" || proto === "http") url.protocol = `${proto}:`;
+    return url.origin;
+  };
+
+  // One canonical address: in production, send www.pundit.chat, the fly.dev address etc. to
+  // APP_URL, so shared links, cookies and the CSRF origin check all agree. /healthz is exempt
+  // because the platform's health checks hit the machine directly.
+  if (config.NODE_ENV === "production") {
+    const appHost = new URL(config.appUrl).host;
+    app.use(async (c, next) => {
+      const host = c.req.header("host");
+      if (!host || host === appHost || c.req.path === "/healthz") return next();
+      if (c.req.method !== "GET" && c.req.method !== "HEAD") return next(); // writes fall through to the CSRF check
+      const url = new URL(c.req.url);
+      return c.redirect(`${config.appUrl}${url.pathname}${url.search}`, 301);
+    });
+  }
+
   // CSRF: state-changing requests must come from our own origin, and API writes must be JSON
   // (a cross-site HTML form can't send application/json without a CORS preflight).
   app.use(async (c, next) => {
     if (c.req.method === "GET" || c.req.method === "HEAD" || c.req.method === "OPTIONS") return next();
-    const reqOrigin = new URL(c.req.url).origin;
+    const reqOrigin = publicOrigin(c);
     const origin = c.req.header("origin");
     const referer = c.req.header("referer");
     let source: string | undefined;
