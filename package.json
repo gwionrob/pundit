@@ -1,5 +1,5 @@
 {
-  "name": "pundit-cli",
+  "name": "pundit",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "concurrently -k -n api,web -c blue,magenta \"tsx watch --env-file-if-exists=.env src/index.ts\" \"vite\"",
     "build": "vite build",
+    "build:cli": "tsx scripts/build-cli.ts",
     "start": "NODE_ENV=production tsx --env-file-if-exists=.env src/index.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p client",
     "lint": "eslint .",
@@ -33,6 +34,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^5.2.0",
     "concurrently": "^9.2.5",
+    "esbuild": "^0.27.7",
     "eslint": "^9.39.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.14.0",
