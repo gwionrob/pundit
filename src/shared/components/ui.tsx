@@ -7,14 +7,19 @@
  * <button>, a plain <a> and a router <Link>:  <Link className={button({ variant: "primary" })}>
  */
 import type { ComponentProps, ReactNode } from "react";
+import { twMerge } from "tailwind-merge";
 
-/** Joins class names, skipping falsy ones: cx("a", cond && "b"). */
+/**
+ * Joins class names, skipping falsy ones, and lets later classes win conflicts:
+ * cx("p-5 mb-4", cond && "p-0") gives "mb-4 p-0". That's what makes `className` overrides on
+ * Card, Pill, Input and button() reliable.
+ */
 export function cx(...classes: Array<string | false | null | undefined>): string {
-  return classes.filter(Boolean).join(" ");
+  return twMerge(classes.filter(Boolean).join(" "));
 }
 
 const BUTTON_BASE =
-  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-[10px] border font-semibold no-underline disabled:cursor-progress disabled:opacity-60 aria-busy:cursor-progress aria-busy:opacity-60";
+  "inline-flex max-w-full cursor-pointer items-center justify-center gap-2 text-center rounded-[10px] border font-semibold no-underline disabled:cursor-progress disabled:opacity-60 aria-busy:cursor-progress aria-busy:opacity-60";
 
 const BUTTON_VARIANTS = {
   default: "border-line bg-surface text-ink hover:bg-surface-2",
