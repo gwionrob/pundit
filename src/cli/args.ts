@@ -9,7 +9,7 @@ import type { RenderFormat } from "../core/types.ts";
 export const COMMANDS = ["gameweek", "monthly", "standings"] as const;
 export type Command = (typeof COMMANDS)[number];
 
-export const FORMATS = ["whatsapp", "telegram", "discord", "plain"] as const satisfies readonly RenderFormat[];
+export const FORMATS = ["terminal", "whatsapp", "telegram", "discord", "plain"] as const satisfies readonly RenderFormat[];
 export type CliFormat = (typeof FORMATS)[number];
 
 export type CliAction =
@@ -23,7 +23,8 @@ export type CliAction =
       month?: number;
       year?: number;
       top?: number;
-      format: CliFormat;
+      /** undefined = choose automatically (see resolveOutput) */
+      format?: CliFormat;
       copy: boolean;
       whatsapp: boolean;
     };
@@ -37,9 +38,10 @@ export class UsageError extends Error {
 }
 
 const GLOBAL_OPTIONS = `Options:
-  --format <fmt>  whatsapp | telegram | discord | plain  (default: whatsapp)
-  --copy          copy the bulletin to your clipboard
-  --whatsapp      open WhatsApp with the bulletin ready to send
+  --whatsapp      open WhatsApp with the bulletin ready to send to a group
+  --copy          copy the bulletin to your clipboard, formatted for WhatsApp
+  --format <fmt>  terminal | whatsapp | telegram | discord | plain
+                  (default: terminal on screen, whatsapp when piped or copied)
   -h, --help      show help
   -v, --version   show version`;
 
@@ -150,12 +152,15 @@ export function parseCli(argv: string[]): CliAction {
     }
   }
 
-  const format = (values.format ?? "whatsapp") as CliFormat;
-  if (!FORMATS.includes(format)) {
+  const format = values.format as CliFormat | undefined;
+  if (format !== undefined && !FORMATS.includes(format)) {
     throw new UsageError(`Unknown format "${values.format}". Choose: ${FORMATS.join(", ")}`, command);
   }
-  if (values.whatsapp && values.format && format !== "whatsapp") {
+  if (values.whatsapp && format && format !== "whatsapp") {
     throw new UsageError("--whatsapp always uses WhatsApp formatting; drop --format", command);
+  }
+  if (values.copy && format === "terminal") {
+    throw new UsageError("--copy can't copy terminal colours; use --format whatsapp, telegram, discord or plain", command);
   }
 
   return {
@@ -170,6 +175,45 @@ export function parseCli(argv: string[]): CliAction {
     copy: values.copy,
     whatsapp: values.whatsapp,
   };
+}
+
+export interface OutputEnv {
+  /** stdout is an interactive terminal */
+  isTTY: boolean;
+  /** NO_COLOR is set (https://no-color.org) or TERM=dumb */
+  noColor: boolean;
+  /** FORCE_COLOR is set */
+  forceColor: boolean;
+}
+
+export interface OutputPlan {
+  /** what to print on stdout (null = print nothing) */
+  stdout: { format: CliFormat; color: boolean } | null;
+  /** text format for --copy / --whatsapp */
+  share: CliFormat;
+  /** print the "share it" tip on stderr */
+  tip: boolean;
+}
+
+/**
+ * Decide what goes where. On screen people want a readable bulletin (bold/colour, no
+ * WhatsApp asterisks); anything leaving the terminal (pipe, clipboard, WhatsApp link)
+ * gets WhatsApp markup, because that's where it's usually headed.
+ */
+export function resolveOutput(
+  action: { format?: CliFormat; copy: boolean; whatsapp: boolean },
+  env: OutputEnv,
+): OutputPlan {
+  const color = env.forceColor || (env.isTTY && !env.noColor);
+  const sharing = action.copy || action.whatsapp;
+  const share: CliFormat = action.whatsapp ? "whatsapp" : (action.format ?? "whatsapp");
+
+  if (sharing) {
+    // Show a readable preview of what's being shared, but only to a person.
+    return { stdout: env.isTTY ? { format: "terminal", color } : null, share, tip: false };
+  }
+  const format: CliFormat = action.format ?? (env.isTTY ? "terminal" : "whatsapp");
+  return { stdout: { format, color }, share, tip: env.isTTY && format === "terminal" };
 }
 
 // api.whatsapp.com, not wa.me: wa.me's redirect turns emoji into "�" (see src/delivery/whatsapp.ts).
