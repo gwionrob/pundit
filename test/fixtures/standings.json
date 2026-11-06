@@ -1,0 +1,48 @@
+{
+ "league": {
+  "id": 340312,
+  "name": "Integrity is Mbeumo"
+ },
+ "results": [
+  {
+   "entry": 2597,
+   "entry_name": "Borussia Teeth",
+   "player_name": "Rik Doornenbal",
+   "rank": 1,
+   "last_rank": 3,
+   "rank_sort": 1,
+   "total": 655,
+   "event_total": 74
+  },
+  {
+   "entry": 613029,
+   "entry_name": "D's Team",
+   "player_name": "D D",
+   "rank": 2,
+   "last_rank": 2,
+   "rank_sort": 2,
+   "total": 650,
+   "event_total": 67
+  },
+  {
+   "entry": 67448,
+   "entry_name": "DLouk",
+   "player_name": "Daniel Loukachouk",
+   "rank": 3,
+   "last_rank": 1,
+   "rank_sort": 3,
+   "total": 650,
+   "event_total": 64
+  },
+  {
+   "entry": 14030,
+   "entry_name": "Poisson Fruit",
+   "player_name": "Daniel Holliday",
+   "rank": 4,
+   "last_rank": 5,
+   "rank_sort": 4,
+   "total": 637,
+   "event_total": 70
+  }
+ ]
+}
