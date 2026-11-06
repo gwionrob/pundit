@@ -1,12 +1,14 @@
 /**
  * WhatsApp delivery is deliberately "one tap" rather than automated: there is
  * no official API for posting into ordinary group chats, so we build a
- * wa.me link that opens WhatsApp with the bulletin pre-filled and the user
+ * WhatsApp share link that opens WhatsApp with the bulletin pre-filled and the user
  * picks the group themselves.
  */
 
+// Use api.whatsapp.com directly, NOT wa.me: wa.me's redirect replaces every emoji
+// (4-byte UTF-8) with U+FFFD "�", so bulletins arrive with diamond question marks.
 export function whatsappShareUrl(text: string): string {
-  return `https://wa.me/?text=${encodeURIComponent(text)}`;
+  return `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
 }
 
 export function reportUrl(appUrl: string, slug: string): string {

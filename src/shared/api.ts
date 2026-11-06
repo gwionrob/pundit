@@ -122,7 +122,7 @@ export interface ReportResponse {
   text: { whatsapp: string; plain: string };
   /** html fragment from renderReport(report, "html") — already escaped, safe to inject */
   html: string;
-  whatsappUrl: string; // https://wa.me/?text=...
+  whatsappUrl: string; // https://api.whatsapp.com/send?text=...
   createdAt: string;
   owner?: {
     leagueId: number;

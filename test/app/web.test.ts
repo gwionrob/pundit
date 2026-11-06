@@ -247,7 +247,7 @@ describe("reports", () => {
     expect(r.text.whatsapp).toContain(`${ORIGIN}/r/${r.slug}`);
     expect(r.text.plain).not.toContain("*");
     expect(r.html).toContain("<");
-    expect(r.whatsappUrl).toBe(`https://wa.me/?text=${encodeURIComponent(r.text.whatsapp)}`);
+    expect(r.whatsappUrl).toBe(`https://api.whatsapp.com/send?text=${encodeURIComponent(r.text.whatsapp)}`);
     expect(r.owner).toEqual({ leagueId: league.id, deliveries: [] });
   });
 
@@ -396,7 +396,7 @@ describe("server-rendered pages", () => {
     expect(html).toContain('<meta property="og:title" content="Gameweek 9 Bulletin — League 111"/>');
     expect(html).toContain(`<meta property="og:url" content="${ORIGIN}/r/${r.slug}"/>`);
     expect(html).toContain('property="og:description" content="');
-    expect(html).toContain("https://wa.me/?text=");
+    expect(html).toContain("https://api.whatsapp.com/send?text=");
     expect(html).toContain('data-copy-target="pundit-report-text"');
     expect(html).toContain('id="pundit-report-text"');
     expect(html).toContain("[data-copy-target]"); // inline copy script
