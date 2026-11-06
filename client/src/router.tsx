@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router";
 import { AppLayout } from "./components/AppLayout.tsx";
-import { GuestOnly, RequireAuth } from "./components/guards.tsx";
+import { GuestOnly, RequireAdmin, RequireAuth } from "./components/guards.tsx";
 import { AuthPage } from "./pages/AuthPage.tsx";
 import { ChannelsPage } from "./pages/ChannelsPage.tsx";
 import { DashboardPage } from "./pages/DashboardPage.tsx";
@@ -29,6 +29,13 @@ export const routes = [
           { path: "/dashboard", element: <DashboardPage /> },
           { path: "/leagues/:id", element: <LeagueSettingsPage /> },
           { path: "/channels", element: <ChannelsPage /> },
+        ],
+      },
+      {
+        element: <RequireAdmin />,
+        // Loaded on demand, so the admin page isn't in the bundle every visitor downloads.
+        children: [
+          { path: "/admin", lazy: async () => ({ Component: (await import("./pages/AdminPage.tsx")).AdminPage }) },
         ],
       },
       // Viewable logged out too (the API decides what an owner sees extra).

@@ -55,6 +55,21 @@ export const requireUser: MiddlewareHandler<Env> = async (c, next) => {
   await next();
 };
 
+/** True when the user's email is in ADMIN_EMAILS. */
+export const isAdmin = (config: Pick<Config, "adminEmails">, user: User | undefined): boolean =>
+  Boolean(user && config.adminEmails.has(user.email.toLowerCase()));
+
+/**
+ * Admin-only routes. Everyone else, logged in or not, gets the same 404 as an unknown API
+ * path, so the endpoint's existence isn't confirmed.
+ */
+export const requireAdmin =
+  (config: Pick<Config, "adminEmails">): MiddlewareHandler<Env> =>
+  async (c, next) => {
+    if (!isAdmin(config, c.get("user"))) return apiError(c, 404, "Not found.", "not_found");
+    await next();
+  };
+
 /** The logged-in user (only call behind requireUser). */
 export const currentUser = (c: Context<Env>): User => c.get("user")!;
 

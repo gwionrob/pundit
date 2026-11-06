@@ -11,11 +11,14 @@ import type {
   LeagueDetail,
   LeaguesResponse,
   LeagueSummary,
+  AdminResponse,
   MeResponse,
   ReportResponse,
   TelegramLinkResponse,
 } from "../../src/shared/api.ts";
+import { scrubError } from "../../src/web/api/admin.ts";
 import { createApp, type WebCore } from "../../src/web/app.ts";
+import { hashPassword } from "../../src/web/auth.ts";
 import { fakeReport, memRepo } from "./helpers.ts";
 
 const ORIGIN = "http://localhost:3000";
@@ -125,6 +128,88 @@ describe("auth", () => {
       last = (await c.req("/api/login", { json: { email: "x@example.com", password: "whatever-pw" } })).status;
     }
     expect(last).toBe(429);
+  });
+});
+
+describe("admin dashboard", () => {
+  const ADMIN = "boss@example.com";
+  const WEBHOOK = "https://discord.com/api/webhooks/123456/super-secret-token";
+
+  /** App with ADMIN_EMAILS set, an existing admin account and some data, incl. a failed delivery. */
+  async function withAdmin() {
+    const env = setup({ ADMIN_EMAILS: ` ${ADMIN.toUpperCase()} , other@example.com` });
+    const { repo, client } = env;
+    repo.createUser(ADMIN, await hashPassword(PASSWORD));
+    const ann = client();
+    await ann.signup("ann@example.com");
+    const user = repo.getUserByEmail("ann@example.com")!;
+    const league = repo.addLeague(user, 105831, "The Sunday Lot");
+    const { stored } = repo.saveReport(league.id, fakeReport());
+    const channel = repo.addChannel(user.id, "discord", "#fpl", { webhookUrl: WEBHOOK });
+    repo.recordDelivery(stored.id, channel.id, "failed", `Discord webhook failed (404) ${WEBHOOK}`);
+    const admin = client();
+    expect((await admin.req("/api/login", { json: { email: ADMIN, password: PASSWORD } })).status).toBe(200);
+    return { ...env, ann, admin };
+  }
+
+  it("is a plain 404 for visitors and ordinary users", async () => {
+    const { client, ann } = await withAdmin();
+    for (const c of [client(), ann]) {
+      const res = await c.req("/api/admin");
+      expect(res.status).toBe(404);
+      expect(await res.json()).toEqual({ error: "Not found.", code: "not_found" });
+    }
+    const me = (await (await ann.req("/api/me")).json()) as MeResponse;
+    expect(me.user?.isAdmin).toBe(false);
+  });
+
+  it("is off entirely when ADMIN_EMAILS isn't set", async () => {
+    const { client } = setup();
+    const a = client();
+    await a.signup("boss@example.com");
+    expect((await a.req("/api/admin")).status).toBe(404);
+  });
+
+  it("shows admins the dashboard, uncached and without secrets", async () => {
+    const { admin } = await withAdmin();
+    const me = (await (await admin.req("/api/me")).json()) as MeResponse;
+    expect(me.user?.isAdmin).toBe(true);
+
+    const res = await admin.req("/api/admin");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    const raw = await res.text();
+    const body = JSON.parse(raw) as AdminResponse;
+    expect(body.counts).toMatchObject({ users: 2, leagues: 1, fplLeagues: 1, reports: 1, channels: 1, deliveriesFailed: 1 });
+    expect(body.users.map((u) => u.email).sort()).toEqual(["ann@example.com", ADMIN]);
+    expect(body.leagues[0]).toMatchObject({ fplLeagueId: 105831, owner: "ann@example.com" });
+    expect(body.reports[0]).toMatchObject({ title: "Gameweek 9 Bulletin", league: "The Sunday Lot" });
+    expect(body.deliveries[0]).toMatchObject({ status: "failed", kind: "discord", label: "#fpl" });
+    expect(body.deliveries[0]!.error).toBe("Discord webhook failed (404) [webhook URL]");
+    // Nothing secret anywhere in the response.
+    expect(raw).not.toContain("super-secret-token");
+    expect(raw).not.toMatch(/password|scrypt|token_hash|config_json|webhookUrl/i);
+  });
+
+  it("has no write endpoints", async () => {
+    const { admin } = await withAdmin();
+    for (const method of ["POST", "PUT", "PATCH", "DELETE"]) {
+      expect((await admin.req("/api/admin", { method, json: {} })).status).toBe(404);
+    }
+  });
+
+  it("won't let anyone sign up with an admin email", async () => {
+    const { client } = setup({ ADMIN_EMAILS: ADMIN });
+    const res = await client().signup("Boss@Example.com");
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({ code: "conflict" });
+  });
+
+  it("scrubs tokens and keys from delivery errors", () => {
+    expect(scrubError(null)).toBeNull();
+    expect(scrubError("Telegram failed: https://api.telegram.org/bot123:ABC-def/sendMessage")).not.toContain("ABC-def");
+    expect(scrubError("bad key re_abcdefgh12345")).toBe("bad key [key]");
+    expect(scrubError("x".repeat(1000))!.length).toBe(300);
   });
 });
 

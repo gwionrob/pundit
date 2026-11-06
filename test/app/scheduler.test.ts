@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Report } from "../../src/core/index.ts";
-import { isLastGameweekOfMonth, LAST_GW_KEY, runTick, type SchedulerCore } from "../../src/jobs/scheduler.ts";
+import {
+  isLastGameweekOfMonth,
+  LAST_GW_KEY,
+  LAST_TICK_KEY,
+  runTick,
+  startScheduler,
+  type SchedulerCore,
+} from "../../src/jobs/scheduler.ts";
 import { ev, fakeReport, memRepo, state } from "./helpers.ts";
 
 class Updating extends Error {}
@@ -103,5 +110,20 @@ describe("runTick", () => {
     const res = await runTick(t.deps);
     expect(res).toMatchObject({ status: "processed", reports: 1 });
     expect(t.repo.getState(LAST_GW_KEY)).toBe("10");
+  });
+});
+
+describe("startScheduler", () => {
+  it("records when it last ran and how it went (for the admin dashboard)", async () => {
+    const { repo, core } = setup(9);
+    const scheduler = startScheduler({ repo, core, deliver: async () => {}, log: () => {} }, { bootDelayMs: 0 });
+    try {
+      await vi.waitFor(() => expect(repo.getState(LAST_TICK_KEY)).toBeDefined());
+      const tick = JSON.parse(repo.getState(LAST_TICK_KEY)!) as { at: string; status: string };
+      expect(tick.status).toBe("initialised");
+      expect(Date.parse(tick.at)).toBeGreaterThan(Date.now() - 60_000);
+    } finally {
+      scheduler.stop();
+    }
   });
 });

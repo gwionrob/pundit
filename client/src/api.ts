@@ -12,6 +12,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   AddLeagueRequest,
+  AdminResponse,
   ApiError,
   AuthRequest,
   ChannelDto,
@@ -78,6 +79,7 @@ export const keys = {
   league: (id: number) => ["leagues", id] as const,
   report: (slug: string) => ["reports", slug] as const,
   channels: ["channels"] as const,
+  admin: ["admin"] as const,
 };
 
 // ---------- auth ----------
@@ -231,4 +233,11 @@ export function useDeleteChannel() {
     mutationFn: (id: number) => request<{ ok: true }>("DELETE", `/api/channels/${id}`),
     onSuccess: () => invalidateChannels(qc),
   });
+}
+
+// ---------- admin ----------
+
+/** The read-only admin dashboard. Only call for users with `isAdmin`; the server 404s everyone else. */
+export function useAdminDashboard() {
+  return useQuery({ queryKey: keys.admin, queryFn: () => request<AdminResponse>("GET", "/api/admin") });
 }
