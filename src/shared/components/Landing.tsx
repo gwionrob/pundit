@@ -88,15 +88,16 @@ export function Landing({ loggedIn, sampleHtml }: { loggedIn: boolean; sampleHtm
 
       <div className="card small">
         <h2>Prefer the terminal?</h2>
-        <p className="muted">Pundit also comes as a command-line tool (coming soon):</p>
+        <p className="muted">Pundit also comes as a command-line tool. Try it without installing anything:</p>
         <p>
-          <code>npx -p pundit-cli pundit gameweek &lt;league&gt;</code>
+          <code>npx pundit-cli gameweek &lt;league&gt;</code>
         </p>
+        <p className="muted">Or install it:</p>
         <p>
           <code>brew install gwionrob/tap/pundit</code>
         </p>
         <p className="muted">
-          Open source on <a href="https://github.com/gwionrob/pundit">GitHub</a>.
+          The CLI is open source (MIT) on <a href="https://github.com/gwionrob/pundit#cli">GitHub</a>.
         </p>
       </div>
     </PageShell>
