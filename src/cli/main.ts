@@ -22,7 +22,11 @@ import {
   type CliAction,
 } from "./args.ts";
 
+// Replaced with a string literal by scripts/build-cli.ts when bundling for npm/Homebrew.
+declare const __PUNDIT_VERSION__: string | undefined;
+
 function version(): string {
+  if (typeof __PUNDIT_VERSION__ !== "undefined") return __PUNDIT_VERSION__;
   const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")) as { version: string };
   return pkg.version;
 }
