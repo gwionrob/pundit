@@ -23,6 +23,7 @@ export type RenderFormat =
   | "telegram" // Telegram HTML parse_mode (<b>, escaped &<>)
   | "discord" // Discord markdown (**bold**), escaped
   | "plain" // no markup at all
+  | "terminal" // ANSI bold/colour for a TTY (or no codes with { color: false }); indented, no * markup
   | "html"; // HTML fragment for the web preview (escaped, <section>/<h3>/<p>)
 
 /** A run of inline text. Renderers decide how to mark up `bold`. */

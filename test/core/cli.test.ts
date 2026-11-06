@@ -3,6 +3,7 @@ import {
   clipboardCommands,
   openCommand,
   parseCli,
+  resolveOutput,
   UsageError,
   whatsappShareUrl,
 } from "../../src/cli/args.ts";
@@ -22,8 +23,12 @@ describe("parseCli", () => {
     expect(parseCli(["gameweek", "340312"])).toEqual({
       kind: "report", command: "gameweek", leagueId: 340312,
       gameweek: undefined, month: undefined, year: undefined, top: undefined,
-      format: "whatsapp", copy: false, whatsapp: false,
+      format: undefined, copy: false, whatsapp: false,
     });
+  });
+
+  it("rejects --copy with terminal format (colour codes don't belong in a clipboard)", () => {
+    expect(usage(["gameweek", "1", "--copy", "--format", "terminal"])).toMatch(/can't copy terminal colours/);
   });
 
   it("accepts league URLs and command flags in any order", () => {
@@ -81,5 +86,34 @@ describe("platform helpers", () => {
     expect(openCommand("darwin", "u")).toEqual(["open", ["u"]]);
     expect(openCommand("linux", "u")).toEqual(["xdg-open", ["u"]]);
     expect(openCommand("win32", "u")[0]).toBe("rundll32");
+  });
+});
+
+describe("resolveOutput", () => {
+  const tty = { isTTY: true, noColor: false, forceColor: false };
+  const pipe = { isTTY: false, noColor: false, forceColor: false };
+  const plain = { copy: false, whatsapp: false };
+
+  it("on screen: readable terminal format with colour and the share tip", () => {
+    expect(resolveOutput(plain, tty)).toEqual({ stdout: { format: "terminal", color: true }, share: "whatsapp", tip: true });
+  });
+
+  it("piped: WhatsApp markup, no colour, no tip", () => {
+    expect(resolveOutput(plain, pipe)).toEqual({ stdout: { format: "whatsapp", color: false }, share: "whatsapp", tip: false });
+  });
+
+  it("respects NO_COLOR and FORCE_COLOR", () => {
+    expect(resolveOutput(plain, { ...tty, noColor: true }).stdout).toEqual({ format: "terminal", color: false });
+    expect(resolveOutput({ ...plain, format: "terminal" }, { ...pipe, forceColor: true }).stdout).toEqual({ format: "terminal", color: true });
+  });
+
+  it("an explicit --format wins on screen", () => {
+    expect(resolveOutput({ ...plain, format: "discord" }, tty)).toMatchObject({ stdout: { format: "discord" }, tip: false });
+  });
+
+  it("--copy / --whatsapp: share WhatsApp text, preview it readably on screen only", () => {
+    expect(resolveOutput({ copy: true, whatsapp: false }, tty)).toEqual({ stdout: { format: "terminal", color: true }, share: "whatsapp", tip: false });
+    expect(resolveOutput({ copy: false, whatsapp: true }, pipe)).toEqual({ stdout: null, share: "whatsapp", tip: false });
+    expect(resolveOutput({ copy: true, whatsapp: false, format: "telegram" }, tty).share).toBe("telegram");
   });
 });

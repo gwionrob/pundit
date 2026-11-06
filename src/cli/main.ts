@@ -17,6 +17,7 @@ import {
   HELP,
   openCommand,
   parseCli,
+  resolveOutput,
   UsageError,
   whatsappShareUrl,
   type CliAction,
@@ -119,12 +120,21 @@ export async function main(argv: string[]): Promise<number> {
 
   try {
     const report = await buildReport(action);
-    const text = renderReport(report, action.whatsapp ? "whatsapp" : action.format);
+    const plan = resolveOutput(action, {
+      isTTY: Boolean(process.stdout.isTTY),
+      noColor: Boolean(process.env.NO_COLOR) || process.env.TERM === "dumb",
+      forceColor: Boolean(process.env.FORCE_COLOR),
+    });
 
-    if (!action.copy && !action.whatsapp) {
-      process.stdout.write(text + "\n");
-      return 0;
+    if (plan.stdout) {
+      process.stdout.write(renderReport(report, plan.stdout.format, { color: plan.stdout.color }) + "\n");
     }
+    if (plan.tip) {
+      const dim = (s: string) => (plan.stdout?.color ? `\x1b[2m${s}\x1b[22m` : s);
+      console.error(dim("\nShare it: add --whatsapp to send it to a group, or --copy to copy it."));
+    }
+
+    const text = renderReport(report, plan.share);
     if (action.copy) {
       await copyToClipboard(text);
       console.error(`✓ Copied "${report.title}" to your clipboard.`);

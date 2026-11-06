@@ -65,4 +65,21 @@ describe("renderReport", () => {
     expect(renderReport(report, "discord", { footer }).endsWith("https://example.com/r/a_b*c")).toBe(true);
     expect(renderReport(report, "html", { footer })).toContain("<p>📰 Full bulletin: https://example.com/r/a_b*c</p>");
   });
+
+  it("terminal (no colour): no markup characters added, lines indented under headings", () => {
+    const out = renderReport(report, "terminal", { color: false });
+    expect(out.split("\n")[0]).toBe("Gameweek 9 Bulletin");
+    expect(out).toContain("🏆 Gameweek winner\n  *Mo*_the_~king~` (A&B <FC>) — 78 pts"); // names untouched, no added *
+    expect(out).not.toContain("\x1b[");
+  });
+
+  it("terminal (colour): ANSI bold/colour that nests cleanly, arrows coloured", () => {
+    const moves: Report = { ...report, sections: [{ heading: "🔝 Top 5", lines: [{ segments: ["1. ", { bold: "Ann" }, " — 627 (▲1)"] }, { segments: ["2. Ben — 612 (▼2)"] }] }] };
+    const out = renderReport(moves, "terminal");
+    expect(out).toContain("\x1b[1;35mGameweek 9 Bulletin\x1b[22;39m");
+    expect(out).toContain("\x1b[1;36m🔝 Top 5\x1b[22;39m");
+    expect(out).toContain("  1. \x1b[1mAnn\x1b[22m — 627 (\x1b[32m▲1\x1b[39m)");
+    expect(out).toContain("(\x1b[31m▼2\x1b[39m)");
+    expect(out).not.toContain("\x1b[0m"); // no full resets that would cancel outer styles
+  });
 });

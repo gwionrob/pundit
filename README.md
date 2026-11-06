@@ -45,10 +45,12 @@ pundit monthly 123456 --month 10 --year 2026    # Manager of the Month
 pundit standings 123456 --top 5
 pundit gameweek 123456 --whatsapp               # opens WhatsApp with it pre-written
 pundit gameweek 123456 --copy                   # copy to clipboard
-pundit standings 123456 --format telegram       # whatsapp | telegram | discord | plain
+pundit standings 123456 --format telegram       # terminal | whatsapp | telegram | discord | plain
 ```
 
-`pundit --help` lists everything.
+On screen you get a readable bulletin with colour. When piped, copied or sent with `--whatsapp`
+it uses WhatsApp formatting (`*bold*`), since that's where it's usually going. Set `NO_COLOR=1` to
+turn colour off. `pundit --help` lists everything.
 
 ### Optional integrations
 

@@ -3,6 +3,8 @@ import type { RenderFormat, Report, Segment } from "./types.ts";
 export interface RenderOptions {
   /** Optional line appended at the end, e.g. "📰 Full bulletin: <url>" */
   footer?: string;
+  /** "terminal" format only: emit ANSI colour/bold codes (default true). */
+  color?: boolean;
 }
 
 interface Markup {
@@ -47,7 +49,32 @@ const textMarkup = (opts: {
   section: (heading, lines) => [heading, ...lines].join("\n"),
 });
 
-const MARKUPS: Record<RenderFormat, Markup> = {
+// ANSI styling for terminals. Each style closes with its own reset code (22 = normal
+// intensity, 39 = default colour) rather than a full reset, so styles can nest.
+const style = (open: string, close: string, on: boolean) => (s: string) =>
+  on && s ? `\x1b[${open}m${s}\x1b[${close}m` : s;
+
+function terminalMarkup(color: boolean): Markup {
+  const bold = style("1", "22", color);
+  const dim = style("2", "22", color);
+  const heading = style("1;36", "22;39", color); // bold cyan
+  const title = style("1;35", "22;39", color); // bold magenta
+  const up = style("32", "39", color); // green
+  const down = style("31", "39", color); // red
+  const arrows = (s: string) => s.replace(/▲\d*/g, up).replace(/▼\d*/g, down);
+  return {
+    text: arrows,
+    bold,
+    heading,
+    title,
+    subtitle: dim,
+    line: (s) => `  ${s}`,
+    join: (blocks) => blocks.join("\n\n"),
+    section: (h, lines) => [h, ...lines].join("\n"),
+  };
+}
+
+const MARKUPS: Record<Exclude<RenderFormat, "terminal">, Markup> = {
   whatsapp: textMarkup({ text: sanitiseWhatsapp, bold: (s) => (s.trim() ? `*${s}*` : s) }),
   telegram: textMarkup({ text: escapeTelegram, bold: (s) => `<b>${s}</b>` }),
   discord: textMarkup({ text: escapeDiscord, bold: (s) => (s.trim() ? `**${s}**` : s) }),
@@ -71,7 +98,7 @@ function renderSegments(segments: Segment[], m: Markup): string {
 }
 
 export function renderReport(report: Report, format: RenderFormat, opts: RenderOptions = {}): string {
-  const m = MARKUPS[format];
+  const m = format === "terminal" ? terminalMarkup(opts.color ?? true) : MARKUPS[format];
   const header = [m.title(report.title)];
   if (report.subtitle) header.push(m.subtitle(report.subtitle));
 
