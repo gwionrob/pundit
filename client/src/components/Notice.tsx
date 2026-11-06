@@ -8,7 +8,10 @@ export interface Flash {
 /** Green (ok) or red (err) message box. Announced to screen readers. */
 export function Notice({ kind, children }: { kind: Flash["kind"]; children: ReactNode }) {
   return (
-    <div className={`flash ${kind}`} role={kind === "err" ? "alert" : "status"}>
+    <div
+      className={`mb-4 rounded-[10px] px-3.5 py-3 text-[15px] ${kind === "ok" ? "bg-ok-soft text-ok" : "bg-danger-soft text-danger"}`}
+      role={kind === "err" ? "alert" : "status"}
+    >
       {children}
     </div>
   );

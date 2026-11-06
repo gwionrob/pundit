@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import type { LeagueSummary, ReportKind } from "../../../src/shared/api.ts";
 import { errorMessage, useAddLeague, useChannels, useGenerateReport, useLeagues, useMe } from "../api.ts";
+import { button, Card, Input, Label, List, Pill } from "../../../src/shared/components/ui.tsx";
 import { Notice, type Flash } from "../components/Notice.tsx";
 import { formatDate } from "../format.ts";
 
@@ -10,7 +11,7 @@ export function DashboardPage() {
   const leagues = useLeagues();
   const channels = useChannels();
 
-  if (leagues.isPending) return <p className="muted">Loading your leagues…</p>;
+  if (leagues.isPending) return <p className="text-muted">Loading your leagues…</p>;
   if (leagues.isError) return <Notice kind="err">{errorMessage(leagues.error)}</Notice>;
 
   const { limits } = leagues.data;
@@ -21,24 +22,24 @@ export function DashboardPage() {
   return (
     <>
       <title>Your leagues · Pundit</title>
-      <div className="spread" style={{ marginBottom: 16 }}>
-        <h1 style={{ margin: 0 }}>Your leagues</h1>
-        <span className="pill">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2.5">
+        <h1 className="m-0">Your leagues</h1>
+        <Pill>
           {limits.used} of {limits.maxLeagues} leagues · {plan === "free" ? "Free beta" : plan}
-        </span>
+        </Pill>
       </div>
 
       {limits.used < limits.maxLeagues ? (
         <AddLeagueForm />
       ) : (
-        <div className="card muted">You've reached your plan's limit of {limits.maxLeagues} leagues.</div>
+        <Card className="text-muted">You've reached your plan's limit of {limits.maxLeagues} leagues.</Card>
       )}
 
       {hasLeagues && channels.isSuccess && !hasChannels && (
-        <div className="card small">
+        <Card className="text-sm">
           💡 You can always share bulletins to WhatsApp with one tap. To post automatically,{" "}
           <Link to="/channels">link a Telegram group, Discord channel or email</Link>.
-        </div>
+        </Card>
       )}
 
       {leagues.data.leagues.map((league) => (
@@ -68,17 +69,17 @@ function AddLeagueForm() {
   };
 
   return (
-    <div className="card">
+    <Card>
       {added && (
         <Notice kind="ok">
           Added {added}. Your first bulletin arrives after the next gameweek, or generate one now.
         </Notice>
       )}
       {addLeague.isError && <Notice kind="err">{errorMessage(addLeague.error)}</Notice>}
-      <form className="stack" onSubmit={onSubmit}>
+      <form className="space-y-3" onSubmit={onSubmit}>
         <div>
-          <label htmlFor="league">Add a league</label>
-          <input
+          <Label htmlFor="league">Add a league</Label>
+          <Input
             id="league"
             type="text"
             inputMode="url"
@@ -87,18 +88,18 @@ function AddLeagueForm() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
-          <p className="small muted" style={{ marginTop: 6 }}>
+          <p className="mt-1.5 text-sm text-muted">
             On the FPL website, open your league and copy the address from your browser. The number in it is the league
             ID.
           </p>
         </div>
         <div>
-          <button className="btn primary" type="submit" disabled={addLeague.isPending}>
+          <button className={button({ variant: "primary" })} type="submit" disabled={addLeague.isPending}>
             {addLeague.isPending ? "Checking league…" : "Add league"}
           </button>
         </div>
       </form>
-    </div>
+    </Card>
   );
 }
 
@@ -125,38 +126,38 @@ function LeagueCard({ league }: { league: LeagueSummary }) {
   };
 
   return (
-    <div className="card">
-      <div className="spread">
+    <Card>
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
         <div>
-          <h2 style={{ margin: 0 }}>{league.name}</h2>
-          <p className="small muted" style={{ margin: "2px 0 0" }}>
+          <h2 className="m-0">{league.name}</h2>
+          <p className="mt-0.5 mb-0 text-sm text-muted">
             League {league.fplLeagueId} ·{" "}
-            <span className={`pill ${league.gameweekEnabled ? "on" : ""}`}>
+            <Pill tone={league.gameweekEnabled ? "on" : "default"}>
               {league.gameweekEnabled ? "Auto weekly" : "Weekly off"}
-            </span>{" "}
-            <span className={`pill ${league.monthlyEnabled ? "on" : ""}`}>
+            </Pill>{" "}
+            <Pill tone={league.monthlyEnabled ? "on" : "default"}>
               {league.monthlyEnabled ? "Auto monthly" : "Monthly off"}
-            </span>
+            </Pill>
           </p>
         </div>
-        <Link className="btn sm" to={`/leagues/${league.id}`}>
+        <Link className={button({ size: "sm" })} to={`/leagues/${league.id}`}>
           Settings
         </Link>
       </div>
 
       {error && (
-        <div style={{ marginTop: 14 }}>
+        <div className="mt-3.5">
           <Notice kind="err">{error.text}</Notice>
         </div>
       )}
 
-      <div className="row" style={{ marginTop: 14 }}>
+      <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
         {GENERATE_BUTTONS.map(({ kind, label }) => {
           const busy = generate.isPending && generate.variables?.kind === kind;
           return (
             <button
               key={kind}
-              className="btn sm"
+              className={button({ size: "sm" })}
               type="button"
               disabled={generate.isPending}
               aria-busy={busy}
@@ -169,19 +170,19 @@ function LeagueCard({ league }: { league: LeagueSummary }) {
       </div>
 
       {league.latestReports.length ? (
-        <ul className="plain" style={{ marginTop: 12 }}>
+        <List className="mt-3">
           {league.latestReports.map((r) => (
-            <li key={r.slug} className="spread">
+            <li key={r.slug} className="flex flex-wrap items-center justify-between gap-2.5">
               <Link to={`/reports/${r.slug}`}>{r.title}</Link>
-              <span className="small muted">{formatDate(r.createdAt)}</span>
+              <span className="text-sm text-muted">{formatDate(r.createdAt)}</span>
             </li>
           ))}
-        </ul>
+        </List>
       ) : (
-        <p className="small muted" style={{ margin: "12px 0 0" }}>
+        <p className="mt-3 mb-0 text-sm text-muted">
           No bulletins yet. Generate one above, or wait for the next gameweek to finish.
         </p>
       )}
-    </div>
+    </Card>
   );
 }

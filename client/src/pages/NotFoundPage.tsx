@@ -1,14 +1,15 @@
 import { Link } from "react-router";
+import { button, Card } from "../../../src/shared/components/ui.tsx";
 
 export function NotFoundPage() {
   return (
-    <div className="card center" style={{ maxWidth: 480, margin: "40px auto" }}>
+    <Card className="mx-auto mt-10 max-w-[480px] text-center">
       <title>Not found · Pundit</title>
-      <h1 style={{ fontSize: "1.6rem" }}>Page not found</h1>
-      <p className="muted">That page doesn't exist, or the link is wrong.</p>
-      <Link className="btn primary" to="/dashboard">
+      <h1 className="text-[1.6rem]">Page not found</h1>
+      <p className="text-muted">That page doesn't exist, or the link is wrong.</p>
+      <Link className={button({ variant: "primary" })} to="/dashboard">
         Go to your leagues
       </Link>
-    </div>
+    </Card>
   );
 }

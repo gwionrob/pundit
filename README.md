@@ -82,10 +82,17 @@ src/
 npm test            # vitest (no network: tests use recorded FPL fixtures)
 npm run typecheck   # server + client
 npm run lint        # ESLint (typescript-eslint, react-hooks)
-npm run build       # production build of the React app into client/dist
+npm run format      # Prettier (also sorts Tailwind classes); CI runs format:check
+npm run build       # CSS for server-rendered pages into dist-css, React app into client/dist
 ```
 
-CI runs all four on every pull request (`.github/workflows/ci.yml`).
+CI runs these on every pull request (`.github/workflows/ci.yml`).
+
+Styling is [Tailwind CSS](https://tailwindcss.com) v4. Components use utility classes directly.
+The repeated pieces (`button()`, `Card`, `Pill`, `Input`, …) live in `src/shared/components/ui.tsx`,
+and colours are theme tokens in `src/shared/styles.css` (`bg-surface`, `text-muted`,
+`border-line`, `text-accent`…) that switch automatically in dark mode. The Tailwind CSS
+IntelliSense editor extension autocompletes them.
 
 Debugging: install the React DevTools browser extension for the app, and the TanStack Query
 devtools show every API call's cached data. For the server, `console.log` or run it with

@@ -9,12 +9,37 @@ import { renderToString } from "react-dom/server";
 import { renderReport } from "../core/index.ts";
 import type { ReportResponse } from "../shared/api.ts";
 import { Landing } from "../shared/components/Landing.tsx";
-import { GuestNav, PageShell } from "../shared/components/PageShell.tsx";
+import { GuestNav, MemberNav, PageShell } from "../shared/components/PageShell.tsx";
 import { ReportView } from "../shared/components/ReportView.tsx";
+import { button, Card } from "../shared/components/ui.tsx";
 import { SAMPLE_REPORT } from "./sample-report.ts";
 import { ICON_LINKS } from "./icons.ts";
 
-const STYLES = readFileSync(new URL("../shared/styles.css", import.meta.url), "utf8");
+/**
+ * The compiled Tailwind CSS, inlined into every page (no extra request, and link previews get
+ * styled HTML). `npm run build:css` writes it; `npm run dev` keeps it up to date.
+ */
+const CSS_FILE = new URL("../../dist-css/site.css", import.meta.url);
+const PRODUCTION = process.env.NODE_ENV === "production";
+let cachedStyles: string | undefined;
+let warnedMissingCss = false;
+
+function styles(): string {
+  if (cachedStyles !== undefined) return cachedStyles;
+  try {
+    const css = readFileSync(CSS_FILE, "utf8");
+    // In production the file never changes, so read it once; in dev re-read it for live edits.
+    if (PRODUCTION) cachedStyles = css;
+    return css;
+  } catch (e) {
+    if (PRODUCTION) throw new Error(`Missing ${CSS_FILE.pathname}: run npm run build first`, { cause: e });
+    if (!warnedMissingCss) {
+      warnedMissingCss = true;
+      console.warn("[web] dist-css/site.css not found, so pages are unstyled. Run npm run build:css (or npm run dev).");
+    }
+    return "";
+  }
+}
 const SAMPLE_HTML = renderReport(SAMPLE_REPORT, "html");
 const SITE_DESCRIPTION =
   "Pundit: the weekly bulletin for your Fantasy Premier League mini-league. Winners, wooden spoon, captain flops and manager of the month, ready to share.";
@@ -52,7 +77,7 @@ function Document({ meta, script, children }: { meta: Meta; script?: string; chi
         <meta name="twitter:title" content={meta.title} />
         <meta name="twitter:description" content={meta.description} />
         {meta.noindex && <meta name="robots" content="noindex" />}
-        <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+        <style dangerouslySetInnerHTML={{ __html: styles() }} />
       </head>
       <body>
         {children}
@@ -64,15 +89,7 @@ function Document({ meta, script, children }: { meta: Meta; script?: string; chi
 
 const html = (node: ReactNode) => `<!doctype html>${renderToString(node)}`;
 
-const navFor = (loggedIn: boolean) =>
-  loggedIn ? (
-    <>
-      <a href="/dashboard">Leagues</a>
-      <a href="/channels">Channels</a>
-    </>
-  ) : (
-    <GuestNav />
-  );
+const navFor = (loggedIn: boolean) => (loggedIn ? <MemberNav /> : <GuestNav />);
 
 export function renderLandingPage(opts: { loggedIn: boolean; appUrl: string }): string {
   return html(
@@ -122,13 +139,13 @@ export function renderNotFoundPage(opts: { loggedIn: boolean }): string {
   return html(
     <Document meta={{ title: "Not found · Pundit", description: SITE_DESCRIPTION, noindex: true }}>
       <PageShell brandHref={opts.loggedIn ? "/dashboard" : "/"} nav={navFor(opts.loggedIn)}>
-        <div className="card center" style={{ marginTop: 40 }}>
-          <h1>Not found</h1>
-          <p className="muted">That bulletin doesn't exist, or the link is wrong.</p>
-          <a className="btn primary" href="/">
+        <Card className="mx-auto mt-10 max-w-[480px] text-center">
+          <h1 className="text-[1.6rem]">Not found</h1>
+          <p className="text-muted">That bulletin doesn't exist, or the link is wrong.</p>
+          <a className={button({ variant: "primary" })} href="/">
             Go to Pundit
           </a>
-        </div>
+        </Card>
       </PageShell>
     </Document>,
   );

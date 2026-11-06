@@ -1,481 +1,114 @@
-/* Pundit stylesheet: shared by the React app (imported in client/src/main.tsx) and the
-   server-rendered pages (inlined by the server). Light/dark via prefers-color-scheme. */
-:root {
-  --bg: #f7f7f4;
-  --surface: #ffffff;
-  --surface-2: #f0f0ec;
-  --text: #16181d;
-  --muted: #5d6370;
-  --border: #e2e2dc;
-  --accent: #0f766e;
-  --accent-ink: #ffffff;
-  --accent-soft: #e3f3f1;
-  --danger: #b42318;
-  --danger-soft: #fdecea;
-  --ok: #067647;
-  --ok-soft: #e7f6ec;
-  --wa: #1fa855;
-  --radius: 12px;
-  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
-  color-scheme: light;
+/*
+ * Pundit's stylesheet: Tailwind v4. Components style themselves with utility classes; this file
+ * only holds the design tokens, a few element defaults, and the bulletin markup (which comes
+ * from the renderer as an HTML string, so it can't carry classes).
+ *
+ * Built twice from this one file: by Vite for the React app, and by the Tailwind CLI into
+ * dist-css/site.css, which the server inlines into its server-rendered pages.
+ */
+@import "tailwindcss";
+
+/* Where Tailwind looks for class names (paths are relative to this file). */
+@source "../../client/src";
+@source "./components";
+@source "../web";
+
+/* Design tokens: `bg-surface`, `text-muted`, `border-line`, `text-accent` and so on. */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-bg: #f7f7f4;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0f0ec;
+  --color-ink: #16181d;
+  --color-muted: #5d6370;
+  --color-line: #e2e2dc;
+  --color-accent: #0f766e;
+  --color-accent-ink: #ffffff;
+  --color-accent-soft: #e3f3f1;
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+  --color-ok: #067647;
+  --color-ok-soft: #e7f6ec;
+  --color-wa: #1fa855;
+
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
 }
+
+/* Dark mode follows the device setting: swap the tokens, and every utility follows. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0f1115;
-    --surface: #171a20;
-    --surface-2: #1f232b;
-    --text: #eceef2;
-    --muted: #9aa1ad;
-    --border: #2a2f38;
-    --accent: #2dd4bf;
-    --accent-ink: #04201d;
-    --accent-soft: #12302d;
-    --danger: #f97066;
-    --danger-soft: #3a1714;
-    --ok: #47cd89;
-    --ok-soft: #0f2e1f;
-    --wa: #25d366;
-    --shadow: none;
+    --color-bg: #0f1115;
+    --color-surface: #171a20;
+    --color-surface-2: #1f232b;
+    --color-ink: #eceef2;
+    --color-muted: #9aa1ad;
+    --color-line: #2a2f38;
+    --color-accent: #2dd4bf;
+    --color-accent-ink: #04201d;
+    --color-accent-soft: #12302d;
+    --color-danger: #f97066;
+    --color-danger-soft: #3a1714;
+    --color-ok: #47cd89;
+    --color-ok-soft: #0f2e1f;
+    --color-wa: #25d366;
+    --shadow-card: none;
     color-scheme: dark;
   }
 }
-* {
-  box-sizing: border-box;
-}
-html {
-  -webkit-text-size-adjust: 100%;
-}
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font:
-    16px/1.55 ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-}
-a {
-  color: var(--accent);
-}
-.wrap {
-  max-width: 880px;
-  margin: 0 auto;
-  padding: 0 16px;
-}
-header.top {
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
-header.top .wrap {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 60px;
-  flex-wrap: wrap;
-}
-.brand {
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--text);
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.brand .mark {
-  display: inline-grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-size: 15px;
-}
-nav.links {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-nav.links a,
-nav.links button {
-  color: var(--muted);
-  text-decoration: none;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font: inherit;
-  font-size: 15px;
-  background: none;
-  border: 0;
-  cursor: pointer;
-}
-nav.links a:hover,
-nav.links button:hover {
-  background: var(--surface-2);
-  color: var(--text);
-}
-main {
-  padding: 28px 0 64px;
-}
-h1 {
-  font-size: clamp(1.7rem, 4vw, 2.4rem);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  margin: 0 0 12px;
-}
-h2 {
-  font-size: 1.25rem;
-  margin: 0 0 12px;
-  letter-spacing: -0.01em;
-}
-h3 {
-  font-size: 1.05rem;
-  margin: 0 0 8px;
-}
-p {
-  margin: 0 0 12px;
-}
-.muted {
-  color: var(--muted);
-}
-.small {
-  font-size: 14px;
-}
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: var(--shadow);
-  margin-bottom: 16px;
-}
-.stack > * + * {
-  margin-top: 12px;
-}
-.row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.spread {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.grid {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-}
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  font-weight: 600;
-  font-size: 15px;
-  text-decoration: none;
-  cursor: pointer;
-  min-height: 42px;
-}
-.btn:hover {
-  background: var(--surface-2);
-}
-.btn.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
-}
-.btn.primary:hover {
-  filter: brightness(1.07);
-}
-.btn.wa {
-  background: var(--wa);
-  border-color: var(--wa);
-  color: #fff;
-  font-size: 17px;
-  padding: 14px 22px;
-}
-.btn.danger {
-  color: var(--danger);
-  border-color: var(--danger);
-}
-.btn.big {
-  font-size: 17px;
-  padding: 14px 22px;
-}
-.btn.sm {
-  padding: 6px 12px;
-  min-height: 34px;
-  font-size: 14px;
-}
-form.inline {
-  display: inline;
-}
-label {
-  display: block;
-  font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="url"] {
-  width: 100%;
-  padding: 11px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-}
-input:focus-visible,
-.btn:focus-visible,
-a:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-.check {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  font-weight: 500;
-  font-size: 15px;
-  margin: 8px 0;
-}
-.check input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent);
-}
-.flash {
-  padding: 12px 14px;
-  border-radius: 10px;
-  margin-bottom: 16px;
-  font-size: 15px;
-}
-.flash.ok {
-  background: var(--ok-soft);
-  color: var(--ok);
-}
-.flash.err {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
-.pill {
-  display: inline-block;
-  padding: 2px 9px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  background: var(--surface-2);
-  color: var(--muted);
-}
-.pill.on {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-.pill.bad {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
-ul.plain {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-ul.plain li {
-  padding: 10px 0;
-  border-top: 1px solid var(--border);
-}
-ul.plain li:first-child {
-  border-top: 0;
-}
-.hero {
-  padding: 24px 0 8px;
-}
-.hero p.lead {
-  font-size: 1.15rem;
-  color: var(--muted);
-  max-width: 40rem;
-}
-.steps {
-  counter-reset: s;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.steps li {
-  counter-increment: s;
-  padding-left: 44px;
-  position: relative;
-  margin-bottom: 16px;
-}
-.steps li::before {
-  content: counter(s);
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--accent-soft);
-  color: var(--accent);
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-}
-.bulletin {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 22px;
-  box-shadow: var(--shadow);
-}
-.bulletin h2 {
-  font-size: 1.35rem;
-  margin-bottom: 2px;
-}
-.bulletin section {
-  padding: 12px 0;
-  border-top: 1px dashed var(--border);
-}
-.bulletin section:first-of-type {
-  border-top: 0;
-}
-.bulletin section h3 {
-  font-size: 1rem;
-  margin-bottom: 6px;
-}
-.bulletin section p {
-  margin: 0 0 4px;
-}
-.phone {
-  max-width: 420px;
-}
-footer.site {
-  border-top: 1px solid var(--border);
-  padding: 24px 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-.actions {
-  position: sticky;
-  bottom: 0;
-  background: linear-gradient(transparent, var(--bg) 30%);
-  padding: 16px 0 8px;
-  margin-top: 8px;
-}
-code,
-.mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.92em;
-}
-/* added for the React app */
-.visually-hidden {
-  position: absolute !important;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: pre;
-  border: 0;
-}
-.btn[disabled],
-.btn[aria-busy="true"] {
-  opacity: 0.6;
-  cursor: progress;
-}
-.center {
-  text-align: center;
-}
-.narrow {
-  max-width: 420px;
-  margin: 24px auto;
-}
-.toast {
-  position: fixed;
-  left: 50%;
-  bottom: 16px;
-  transform: translateX(-50%);
-  max-width: calc(100% - 32px);
-  z-index: 10;
-  box-shadow: var(--shadow);
-}
-.err-text {
-  color: var(--danger);
-  font-size: 14px;
-  margin: 6px 0 0;
-}
-/* admin dashboard */
-.stats {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  margin-bottom: 16px;
-}
-.stat {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  box-shadow: var(--shadow);
-}
-.stat .n {
-  font-size: 1.6rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-}
-.stat .l {
-  font-size: 13px;
-  color: var(--muted);
-}
-.table-scroll {
-  overflow-x: auto;
-  margin: 0 -20px;
-  padding: 0 20px;
-}
-table.data {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-table.data th,
-table.data td {
-  text-align: left;
-  padding: 8px 10px 8px 0;
-  border-top: 1px solid var(--border);
-  vertical-align: top;
-}
-table.data th {
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 600;
-  border-top: 0;
-  white-space: nowrap;
-}
-table.data td.num {
-  font-variant-numeric: tabular-nums;
-}
-table.data td.nowrap {
-  white-space: nowrap;
+
+/* Element defaults. Utilities on an element always win over these. */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  body {
+    @apply bg-bg font-sans text-base/[1.55] text-ink antialiased;
+  }
+  h1 {
+    @apply mb-3 text-[clamp(1.7rem,4vw,2.4rem)] leading-tight font-bold tracking-tight;
+  }
+  h2 {
+    @apply mb-3 text-xl font-bold tracking-tight;
+  }
+  h3 {
+    @apply mb-2 text-[1.05rem] font-bold;
+  }
+  p {
+    @apply mb-3;
+  }
+  a {
+    @apply text-accent underline underline-offset-2;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+/* The bulletin, from renderReport(report, "html"): <h2> title, <p class="subtitle">, then
+   <section>s of <h3> + <p> lines. */
+@layer components {
+  .bulletin {
+    @apply rounded-xl border border-line bg-surface px-[22px] py-5 shadow-card;
+
+    & h2 {
+      @apply mb-0.5 text-[1.35rem];
+    }
+    & .subtitle {
+      @apply text-muted;
+    }
+    & section {
+      @apply border-t border-dashed border-line py-3;
+    }
+    & section:first-of-type {
+      @apply border-t-0;
+    }
+    & section h3 {
+      @apply mb-1.5 text-base;
+    }
+    & section p {
+      @apply mb-1;
+    }
+  }
 }

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
+import { button, Card, Input, Label } from "../../../src/shared/components/ui.tsx";
 import { errorMessage, useLogin, useSignup } from "../api.ts";
 import { Notice } from "../components/Notice.tsx";
 
@@ -23,16 +24,16 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
   };
 
   return (
-    <div className="card narrow">
+    <Card className="mx-auto my-6 max-w-[420px]">
       <title>{isSignup ? "Sign up · Pundit" : "Log in · Pundit"}</title>
-      <h1 style={{ fontSize: "1.6rem" }}>{isSignup ? "Create your account" : "Welcome back"}</h1>
-      {isSignup && <p className="muted">Free during beta, with up to 3 leagues.</p>}
+      <h1 className="text-[1.6rem]">{isSignup ? "Create your account" : "Welcome back"}</h1>
+      {isSignup && <p className="text-muted">Free during beta, with up to 3 leagues.</p>}
       {auth.isError && <Notice kind="err">{errorMessage(auth.error)}</Notice>}
 
-      <form className="stack" onSubmit={onSubmit}>
+      <form className="space-y-3" onSubmit={onSubmit}>
         <div>
-          <label htmlFor="email">Email</label>
-          <input
+          <Label htmlFor="email">Email</Label>
+          <Input
             id="email"
             type="email"
             required
@@ -42,8 +43,8 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
           />
         </div>
         <div>
-          <label htmlFor="password">Password</label>
-          <input
+          <Label htmlFor="password">Password</Label>
+          <Input
             id="password"
             type="password"
             required
@@ -52,18 +53,14 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          {isSignup && (
-            <p className="small muted" style={{ marginTop: 6 }}>
-              At least 8 characters.
-            </p>
-          )}
+          {isSignup && <p className="mt-1.5 text-sm text-muted">At least 8 characters.</p>}
         </div>
-        <button className="btn primary" type="submit" style={{ width: "100%" }} disabled={auth.isPending}>
+        <button className={button({ variant: "primary", full: true })} type="submit" disabled={auth.isPending}>
           {auth.isPending ? "One moment…" : isSignup ? "Sign up" : "Log in"}
         </button>
       </form>
 
-      <p className="small muted center" style={{ marginTop: 16 }}>
+      <p className="mt-4 mb-0 text-center text-sm text-muted">
         {isSignup ? (
           <>
             Already have an account? <Link to="/login">Log in</Link>
@@ -74,6 +71,6 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
           </>
         )}
       </p>
-    </div>
+    </Card>
   );
 }
