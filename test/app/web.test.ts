@@ -403,6 +403,23 @@ describe("server-rendered pages", () => {
     expect(html).toContain("Ann");
   });
 
+  it("serves the favicon set and links it from server-rendered pages", async () => {
+    const { client } = setup();
+    for (const [path, type] of [
+      ["/favicon.svg", "image/svg+xml"],
+      ["/favicon.ico", "image/x-icon"],
+      ["/apple-touch-icon.png", "image/png"],
+    ]) {
+      const res = await client().req(path!);
+      expect(res.status, path).toBe(200);
+      expect(res.headers.get("content-type"), path).toBe(type);
+      expect((await res.arrayBuffer()).byteLength, path).toBeGreaterThan(100);
+    }
+    const html = await (await client().req("/")).text();
+    expect(html).toContain('<link rel="icon" href="/favicon.svg" type="image/svg+xml"/>');
+    expect(html).toContain('<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>');
+  });
+
   it("returns a 404 page for an unknown bulletin", async () => {
     const res = await setup().client().req("/r/does-not-exist");
     expect(res.status).toBe(404);
