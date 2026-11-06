@@ -31,6 +31,8 @@
  *   POST   /api/channels/:id/test          -> { ok: true }
  *   DELETE /api/channels/:id               -> { ok: true }
  *
+ *   GET    /api/admin                      -> AdminResponse         (ADMIN_EMAILS only; 404 for everyone else)
+ *
  * Server-rendered (not part of the SPA): GET / (landing) and GET /r/:slug (public bulletin page
  * with OG tags for WhatsApp/Telegram link previews). Every other non-/api GET serves the SPA.
  */
@@ -51,6 +53,8 @@ export interface UserDto {
   email: string;
   plan: "free" | "pro";
   limits: { maxLeagues: number };
+  /** true when this account is in ADMIN_EMAILS (shows the Admin link) */
+  isAdmin: boolean;
 }
 
 export interface MeResponse {
@@ -158,4 +162,47 @@ export interface DiscordRequest {
 
 export interface EmailToggleRequest {
   enabled: boolean;
+}
+
+// ---------- admin (read-only) ----------
+
+export interface AdminResponse {
+  generatedAt: string;
+  /** "since" counts are for the last 7 days */
+  counts: {
+    users: number;
+    usersSince: number;
+    leagues: number;
+    fplLeagues: number;
+    reports: number;
+    reportsSince: number;
+    channels: number;
+    deliveriesSent: number;
+    deliveriesFailed: number;
+  };
+  scheduler: {
+    lastGameweekProcessed: number | null;
+    lastTickAt: string | null;
+    lastTickStatus: string | null;
+  };
+  users: Array<{ id: number; email: string; plan: string; createdAt: string; leagues: number; channels: number }>;
+  leagues: Array<{
+    id: number;
+    fplLeagueId: number;
+    name: string;
+    owner: string;
+    gameweekEnabled: boolean;
+    monthlyEnabled: boolean;
+    createdAt: string;
+  }>;
+  reports: Array<{ slug: string; kind: ReportKind; title: string; league: string; createdAt: string; url: string }>;
+  deliveries: Array<{
+    slug: string;
+    league: string;
+    kind: ChannelKind;
+    label: string;
+    status: "sent" | "failed";
+    error: string | null;
+    at: string;
+  }>;
 }

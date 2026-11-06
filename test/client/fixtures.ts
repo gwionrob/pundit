@@ -21,7 +21,7 @@ export const REPORT: ReportResponse = {
 export const FEATURES: MeResponse["features"] = { telegram: false, telegramBotUsername: null, email: false };
 
 export const ME: MeResponse = {
-  user: { id: 1, email: "me@example.com", plan: "free", limits: { maxLeagues: 3 } },
+  user: { id: 1, email: "me@example.com", plan: "free", limits: { maxLeagues: 3 }, isAdmin: false },
   features: FEATURES,
 };
 

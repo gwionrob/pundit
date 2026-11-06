@@ -7,6 +7,7 @@ import { getCookie } from "hono/cookie";
 import { secureHeaders } from "hono/secure-headers";
 import * as coreModule from "../core/index.ts";
 import type { DeliveryDeps } from "../delivery/index.ts";
+import { adminRoutes } from "./api/admin.ts";
 import { authRoutes } from "./api/auth.ts";
 import { channelRoutes } from "./api/channels.ts";
 import { leagueRoutes } from "./api/leagues.ts";
@@ -99,6 +100,7 @@ export function createApp(deps: AppDeps) {
   api.route("/leagues", leagueRoutes(ctx));
   api.route("/reports", reportRoutes(ctx));
   api.route("/channels", channelRoutes(ctx));
+  api.route("/admin", adminRoutes(ctx));
   api.notFound((c) => apiError(c, 404, "Not found.", "not_found"));
   app.route("/api", api);
 

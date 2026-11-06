@@ -3,6 +3,8 @@ import type { GameEvent, GameState, Report } from "../core/index.ts";
 import type { League, Repo, StoredReport } from "../db/repo.ts";
 
 export const LAST_GW_KEY = "last_gw_processed";
+/** JSON {at, status} of the most recent scheduler pass, shown on the admin dashboard. */
+export const LAST_TICK_KEY = "scheduler_last_tick";
 
 /** The subset of the stats engine the scheduler needs (injectable for tests). */
 export interface SchedulerCore {
@@ -139,10 +141,17 @@ export function startScheduler(deps: TickDeps, { bootDelayMs = 10_000 } = {}): {
   const tick = async () => {
     if (running) return;
     running = true;
+    let status: string;
     try {
-      await runTick(deps);
+      status = (await runTick(deps)).status;
     } catch (e) {
+      status = "error";
       console.error("[scheduler] tick failed:", e);
+    }
+    try {
+      deps.repo.setState(LAST_TICK_KEY, JSON.stringify({ at: new Date().toISOString(), status }));
+    } catch (e) {
+      console.error("[scheduler] couldn't record tick:", e);
     } finally {
       running = false;
     }

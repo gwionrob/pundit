@@ -14,7 +14,7 @@ import {
   validateEmail,
   verifyPassword,
 } from "../auth.ts";
-import { apiError, clientKey, parseJson, type Env, type WebContext } from "../context.ts";
+import { apiError, clientKey, isAdmin, parseJson, type Env, type WebContext } from "../context.ts";
 import { toUserDto } from "../dto.ts";
 
 const MAX_PASSWORD_LENGTH = 200;
@@ -29,7 +29,7 @@ export function authRoutes(ctx: WebContext) {
   const app = new Hono<Env>();
 
   const me = (user: User | undefined): MeResponse => ({
-    user: user ? toUserDto(user) : null,
+    user: user ? toUserDto(user, isAdmin(config, user)) : null,
     features: {
       telegram: config.telegramEnabled,
       telegramBotUsername: config.telegramEnabled ? (config.TELEGRAM_BOT_USERNAME ?? null) : null,
@@ -63,7 +63,9 @@ export function authRoutes(ctx: WebContext) {
       return apiError(c, 422, `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`, "validation");
     }
     if (password.length > MAX_PASSWORD_LENGTH) return apiError(c, 422, "Password is too long.", "validation");
-    if (repo.getUserByEmail(email)) {
+    // Admin emails can't be claimed by signing up: without email verification, anyone could
+    // otherwise create the admin account before its owner does. Same message as a taken email.
+    if (repo.getUserByEmail(email) || config.adminEmails.has(email)) {
       return apiError(c, 409, "An account with that email already exists. Try logging in.", "conflict");
     }
     const user = repo.createUser(email, await hashPassword(password));

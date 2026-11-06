@@ -109,6 +109,19 @@ fly deploy
 Elsewhere: run `npm run build`, then `npm start`. Set a real `SESSION_SECRET` and `APP_URL`, point
 `DATABASE_PATH` at the persistent volume, and set `TRUST_PROXY=true` behind the host's proxy.
 
+### Admin dashboard
+
+`/admin` is a read-only dashboard: user, league, bulletin and delivery counts, the latest rows of
+each, failed deliveries and when the scheduler last ran. Sign up with your account first, then:
+
+```sh
+fly secrets set ADMIN_EMAILS=you@example.com   # comma-separate several
+```
+
+Only those accounts see it. Everyone else, logged in or not, gets a normal 404, and those emails
+can no longer be used to sign up. It never shows password hashes, session tokens or channel
+secrets such as Discord webhook URLs.
+
 ## Releasing the CLI
 
 ```sh

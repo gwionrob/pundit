@@ -11,11 +11,12 @@ import type {
   UserDto,
 } from "../shared/api.ts";
 
-export const toUserDto = (u: User): UserDto => ({
+export const toUserDto = (u: User, isAdmin = false): UserDto => ({
   id: u.id,
   email: u.email,
   plan: u.plan === "pro" ? "pro" : "free",
   limits: limitsFor(u.plan),
+  isAdmin,
 });
 
 export const toReportSummary = (r: StoredReport): ReportSummary => ({

@@ -65,6 +65,52 @@ export interface Delivery {
   created_at: string;
 }
 
+export interface AdminCounts {
+  users: number;
+  usersSince: number;
+  leagues: number;
+  /** distinct FPL leagues (several users can add the same league) */
+  fplLeagues: number;
+  reports: number;
+  reportsSince: number;
+  channels: number;
+  deliveriesSent: number;
+  deliveriesFailed: number;
+}
+export interface AdminUserRow {
+  id: number;
+  email: string;
+  plan: string;
+  created_at: string;
+  leagues: number;
+  channels: number;
+}
+export interface AdminLeagueRow {
+  id: number;
+  fpl_league_id: number;
+  name: string;
+  owner: string;
+  gameweek_enabled: boolean;
+  monthly_enabled: boolean;
+  created_at: string;
+}
+export interface AdminReportRow {
+  slug: string;
+  kind: ReportKind;
+  title: string;
+  league: string;
+  created_at: string;
+}
+export interface AdminDeliveryRow {
+  slug: string;
+  league: string;
+  kind: ChannelKind;
+  label: string;
+  status: "sent" | "failed";
+  error: string | null;
+  created_at: string;
+}
+
 // ---------- plan limits ----------
 
 export interface PlanLimits {
@@ -406,6 +452,99 @@ export class Repo {
       .get(code) as { user_id: number; expires_at: string } | undefined;
     if (!r || r.expires_at <= now.toISOString()) return undefined;
     return Number(r.user_id);
+  }
+
+  // admin dashboard (read-only; only SELECTs, never secrets: no password hashes, session
+  // tokens or channel config such as Discord webhook URLs)
+  adminCounts(sinceIso: string): AdminCounts {
+    const one = (sql: string, ...params: string[]) => Number((this.db.prepare(sql).get(...params) as Row).n);
+    return {
+      users: one("SELECT COUNT(*) AS n FROM users"),
+      usersSince: one("SELECT COUNT(*) AS n FROM users WHERE created_at >= ?", sinceIso),
+      leagues: one("SELECT COUNT(*) AS n FROM leagues"),
+      fplLeagues: one("SELECT COUNT(DISTINCT fpl_league_id) AS n FROM leagues"),
+      reports: one("SELECT COUNT(*) AS n FROM reports"),
+      reportsSince: one("SELECT COUNT(*) AS n FROM reports WHERE created_at >= ?", sinceIso),
+      channels: one("SELECT COUNT(*) AS n FROM channels WHERE active = 1"),
+      deliveriesSent: one("SELECT COUNT(*) AS n FROM deliveries WHERE status = 'sent' AND created_at >= ?", sinceIso),
+      deliveriesFailed: one("SELECT COUNT(*) AS n FROM deliveries WHERE status = 'failed' AND created_at >= ?", sinceIso),
+    };
+  }
+  adminRecentUsers(limit: number): AdminUserRow[] {
+    return (
+      this.db
+        .prepare(
+          `SELECT u.id, u.email, u.plan, u.created_at,
+             (SELECT COUNT(*) FROM leagues l WHERE l.user_id = u.id) AS leagues,
+             (SELECT COUNT(*) FROM channels c WHERE c.user_id = u.id AND c.active = 1) AS channels
+           FROM users u ORDER BY u.created_at DESC, u.id DESC LIMIT ?`,
+        )
+        .all(limit) as Row[]
+    ).map((r) => ({
+      id: Number(r.id),
+      email: String(r.email),
+      plan: String(r.plan),
+      created_at: String(r.created_at),
+      leagues: Number(r.leagues),
+      channels: Number(r.channels),
+    }));
+  }
+  adminRecentLeagues(limit: number): AdminLeagueRow[] {
+    return (
+      this.db
+        .prepare(
+          `SELECT l.id, l.fpl_league_id, l.name, l.gameweek_enabled, l.monthly_enabled, l.created_at, u.email AS owner
+           FROM leagues l JOIN users u ON u.id = l.user_id ORDER BY l.created_at DESC, l.id DESC LIMIT ?`,
+        )
+        .all(limit) as Row[]
+    ).map((r) => ({
+      id: Number(r.id),
+      fpl_league_id: Number(r.fpl_league_id),
+      name: String(r.name),
+      owner: String(r.owner),
+      gameweek_enabled: Number(r.gameweek_enabled) === 1,
+      monthly_enabled: Number(r.monthly_enabled) === 1,
+      created_at: String(r.created_at),
+    }));
+  }
+  adminRecentReports(limit: number): AdminReportRow[] {
+    return (
+      this.db
+        .prepare(
+          `SELECT r.slug, r.kind, json_extract(r.report_json, '$.title') AS title, r.created_at, l.name AS league
+           FROM reports r JOIN leagues l ON l.id = r.league_id ORDER BY r.created_at DESC, r.id DESC LIMIT ?`,
+        )
+        .all(limit) as Row[]
+    ).map((r) => ({
+      slug: String(r.slug),
+      kind: r.kind as ReportKind,
+      title: String(r.title ?? ""),
+      league: String(r.league),
+      created_at: String(r.created_at),
+    }));
+  }
+  adminRecentDeliveries(limit: number): AdminDeliveryRow[] {
+    return (
+      this.db
+        .prepare(
+          `SELECT r.slug, l.name AS league, c.kind, c.label, d.status, d.error, d.created_at
+           FROM deliveries d JOIN reports r ON r.id = d.report_id JOIN leagues l ON l.id = r.league_id
+           JOIN channels c ON c.id = d.channel_id ORDER BY d.created_at DESC LIMIT ?`,
+        )
+        .all(limit) as Row[]
+    ).map((r) => ({
+      slug: String(r.slug),
+      league: String(r.league),
+      kind: r.kind as ChannelKind,
+      label: String(r.label),
+      status: r.status === "sent" ? "sent" : "failed",
+      error: r.error == null ? null : String(r.error),
+      created_at: String(r.created_at),
+    }));
+  }
+  allState(): Record<string, string> {
+    const rows = this.db.prepare("SELECT key, value FROM job_state ORDER BY key").all() as Row[];
+    return Object.fromEntries(rows.map((r) => [String(r.key), String(r.value)]));
   }
 
   // job state

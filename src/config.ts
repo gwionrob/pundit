@@ -24,6 +24,8 @@ const schema = z.object({
     z.enum(["true", "false", "1", "0"]).default("false").transform((v) => v === "true" || v === "1"),
   ),
   RESEND_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
+  /** Comma-separated emails of accounts that can open /admin. Empty = no admin page. */
+  ADMIN_EMAILS: z.preprocess(emptyToUndefined, z.string().default("")),
   EMAIL_FROM: z.preprocess(
     emptyToUndefined,
     z.string().default("Pundit <pundit@example.com>"),
@@ -34,6 +36,8 @@ export type Config = z.infer<typeof schema> & {
   appUrl: string;
   secureCookies: boolean;
   telegramEnabled: boolean;
+  /** lower-cased ADMIN_EMAILS */
+  adminEmails: ReadonlySet<string>;
 };
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -52,5 +56,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     appUrl,
     secureCookies: appUrl.startsWith("https://"),
     telegramEnabled: Boolean(c.TELEGRAM_BOT_TOKEN && c.TELEGRAM_BOT_USERNAME),
+    adminEmails: new Set(
+      c.ADMIN_EMAILS.split(",")
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean),
+    ),
   };
 }

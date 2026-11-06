@@ -29,6 +29,7 @@ export function AppLayout() {
 }
 
 function UserNav() {
+  const me = useMe();
   const logout = useLogout();
   const navigate = useNavigate();
 
@@ -41,6 +42,7 @@ function UserNav() {
     <>
       <Link to="/dashboard">Leagues</Link>
       <Link to="/channels">Channels</Link>
+      {me.data?.user?.isAdmin && <Link to="/admin">Admin</Link>}
       <button type="button" onClick={onLogout} disabled={logout.isPending}>
         Log out
       </button>
