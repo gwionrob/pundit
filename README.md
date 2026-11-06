@@ -22,8 +22,11 @@ Requires Node 22.13+ (uses the built-in `node:sqlite`).
 ```sh
 npm install
 cp .env.example .env      # set SESSION_SECRET at minimum
-npm run dev               # http://localhost:3000
+npm run dev               # open http://localhost:5173
 ```
+
+`npm run dev` starts two processes: the Hono API server (port 3000) and the Vite dev server for the
+React app (port 5173, with hot reload). Open the Vite one. It forwards API calls to Hono.
 
 ## CLI
 
@@ -56,10 +59,14 @@ pundit standings 123456 --format telegram       # whatsapp | telegram | discord 
 ## How it works
 
 ```
+client/       React app (Vite, React Router, TanStack Query): login, dashboard, league settings,
+              channels, in-app bulletins
 src/
   core/       FPL API client, stats engine, report renderers (WhatsApp/Telegram/Discord/HTML)
   db/         SQLite schema, migrations, repositories
-  web/        Hono server-rendered pages: landing, auth, dashboard, public report pages
+  web/        Hono server: JSON API (/api), plus server-rendered landing page and public
+              bulletin pages (/r/:slug), so WhatsApp/Telegram link previews work
+  shared/     API types and React components used by both the server and the client
   delivery/   Telegram bot, Discord webhooks, email, WhatsApp share links
   jobs/       Scheduler: polls FPL every 15 min; when a gameweek's points are final,
               generates bulletins (and Manager of the Month at month end) and delivers them
@@ -70,11 +77,20 @@ src/
 
 ```sh
 npm test            # vitest (no network: tests use recorded FPL fixtures)
-npm run typecheck
+npm run typecheck   # server + client
+npm run lint        # ESLint (typescript-eslint, react-hooks)
+npm run build       # production build of the React app into client/dist
 ```
+
+CI runs all four on every pull request (`.github/workflows/ci.yml`).
+
+Debugging: install the React DevTools browser extension for the app, and the TanStack Query
+devtools show every API call's cached data. For the server, `console.log` or run it with
+`node --inspect` via `npx tsx --inspect src/index.ts`.
 
 ## Deploying
 
 It's a single Node process with a SQLite file, so any host with a persistent disk works
-(Fly.io, Railway, Render, a small VPS). Set `NODE_ENV=production`, a real `SESSION_SECRET`,
-`APP_URL`, and point `DATABASE_PATH` at the persistent volume.
+(Fly.io, Railway, Render, a small VPS). Run `npm run build`, then `npm start`. In production
+the Hono server also serves the built React app. Set a real `SESSION_SECRET` and `APP_URL`,
+point `DATABASE_PATH` at the persistent volume, and set `TRUST_PROXY=true` behind the host's proxy.

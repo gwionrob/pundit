@@ -6,7 +6,7 @@ import { Repo } from "./db/repo.ts";
 import { createSenders, deliverToLeagueChannels } from "./delivery/index.ts";
 import { runTelegramPoller } from "./delivery/telegram.ts";
 import { startScheduler } from "./jobs/scheduler.ts";
-import { createApp } from "./web/app.tsx";
+import { createApp } from "./web/app.ts";
 
 const config = loadConfig();
 const db = openDb(config.DATABASE_PATH);
@@ -17,7 +17,8 @@ const deliveryDeps = { repo, senders, appUrl: config.appUrl };
 const app = createApp({ config, repo, senders });
 
 const server = serve({ fetch: app.fetch, port: config.PORT }, (info) => {
-  console.log(`Pundit listening on http://localhost:${info.port} (APP_URL=${config.appUrl})`);
+  console.log(`Pundit API listening on http://localhost:${info.port} (APP_URL=${config.appUrl})`);
+  if (config.NODE_ENV !== "production") console.log("Open the app at http://localhost:5173 (served by Vite)");
 });
 
 const scheduler = startScheduler({
