@@ -5,6 +5,7 @@ import {
   RateLimiter,
   startSession,
   userForToken,
+  validateEmail,
   verifyPassword,
 } from "../../src/web/auth.ts";
 import { memRepo } from "./helpers.ts";
@@ -54,5 +55,28 @@ describe("rate limiter", () => {
     expect(rl.take("k", 2)).toBe(false);
     expect(rl.take("other", 2)).toBe(true);
     expect(rl.take("k", 1001)).toBe(true);
+  });
+});
+
+describe("validateEmail", () => {
+  it.each([
+    ["ann@example.com", true],
+    ["first.last+fpl@mail.example.co.uk", true],
+    ["no-at-sign.com", false],
+    ["two@@example.com", false],
+    ["no-dot@example", false],
+    ["empty-label@example..com", false],
+    ["leading-dot@.example.com", false],
+    ["with space@example.com", false],
+    [`${"a".repeat(250)}@example.com`, false],
+  ])("%s → %s", (email, ok) => expect(validateEmail(email)).toBe(ok));
+
+  it("stays fast on hostile input", () => {
+    // Shaped to make a backtracking pattern slow: lots of dots and no valid ending.
+    const evil = `a@${"a.".repeat(50_000)}`;
+    const start = performance.now();
+    expect(validateEmail(evil)).toBe(false);
+    expect(validateEmail(evil.slice(0, 250) + "@")).toBe(false);
+    expect(performance.now() - start).toBeLessThan(50);
   });
 });

@@ -59,7 +59,8 @@ export async function sendTelegram(
  */
 export function parseStartCommand(text: string | undefined, botUsername?: string): string | null {
   if (!text) return null;
-  const m = /^\/start(?:@([A-Za-z0-9_]+))?(?:\s+([A-Za-z0-9_-]{1,64}))?\s*$/.exec(text.trim());
+  // Trimmed first, so no trailing \s* is needed (it would let \s+ and \s* fight over spaces).
+  const m = /^\/start(?:@(\w+))?(?:\s+([\w-]{1,64}))?$/.exec(text.trim());
   if (!m) return null;
   const [, addressedTo, code] = m;
   if (addressedTo && botUsername && addressedTo.toLowerCase() !== botUsername.toLowerCase()) return null;
@@ -117,7 +118,7 @@ export async function handleUpdate(deps: TelegramBotDeps, update: TgUpdate): Pro
     return;
   }
 
-  const isStart = /^\/start(?:@[A-Za-z0-9_]+)?(?:\s|$)/.test(msg.text?.trim() ?? "");
+  const isStart = /^\/start(?:@\w+)?(?:\s|$)/.test(msg.text?.trim() ?? "");
   if (!isStart) return;
   const code = parseStartCommand(msg.text, username);
 

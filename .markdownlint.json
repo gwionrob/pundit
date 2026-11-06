@@ -1,0 +1,6 @@
+{
+  "$comment": "Read by markdownlint (and Codacy). Prettier owns formatting, so line length is off.",
+  "default": true,
+  "MD013": false,
+  "MD043": false
+}

@@ -23,7 +23,7 @@ export function scrubError(error: string | null): string | null {
   return error
     .replace(/https?:\/\/\S*\/api\/webhooks\/\S+/gi, "[webhook URL]")
     .replace(/\bbot\d+:[\w-]+/gi, "bot[token]")
-    .replace(/\b(re|sk|pk)_[A-Za-z0-9_]{8,}/g, "[key]")
+    .replace(/\b(?:re|sk|pk)_\w{8,}/g, "[key]")
     .slice(0, ERROR_MAX);
 }
 

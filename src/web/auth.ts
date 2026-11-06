@@ -63,8 +63,13 @@ export function endSession(repo: Repo, token: string | undefined, secret: string
   if (token) repo.deleteSession(hashToken(token, secret));
 }
 
+/**
+ * A light sanity check (the real test is whether mail arrives). Length first, so the regex
+ * only ever sees short input; and the domain labels can't contain dots, so the pattern can't
+ * backtrack its way into slow (super-linear) matching.
+ */
 export function validateEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
+  return email.length <= 254 && /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(email);
 }
 
 /** Fixed-window in-memory rate limiter (per process). */

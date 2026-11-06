@@ -12,7 +12,7 @@ export function parseLeagueId(input: string): number | null {
   } catch {
     return null;
   }
-  if (!/(^|\.)fantasy\.premierleague\.com$/i.test(url.hostname)) return null;
+  if (!/(?:^|\.)fantasy\.premierleague\.com$/i.test(url.hostname)) return null;
   const match = url.pathname.match(/\/leagues(?:-classic)?\/(\d{1,10})(?:\/|$)/);
   return match ? toId(match[1]!) : null;
 }
