@@ -73,12 +73,18 @@ export function AdminPage() {
             <tr key={l.id}>
               <td>{l.name}</td>
               <td className="num">
-                <a href={`https://fantasy.premierleague.com/leagues/${l.fplLeagueId}/standings/c`} target="_blank" rel="noreferrer">
+                <a
+                  href={`https://fantasy.premierleague.com/leagues/${l.fplLeagueId}/standings/c`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {l.fplLeagueId}
                 </a>
               </td>
               <td>{l.owner}</td>
-              <td className="nowrap">{[l.gameweekEnabled && "weekly", l.monthlyEnabled && "monthly"].filter(Boolean).join(", ") || "off"}</td>
+              <td className="nowrap">
+                {[l.gameweekEnabled && "weekly", l.monthlyEnabled && "monthly"].filter(Boolean).join(", ") || "off"}
+              </td>
               <td className="nowrap">{formatDate(l.createdAt)}</td>
             </tr>
           ))}
@@ -116,7 +122,11 @@ function Stat({ n, label, sub, bad }: { n: number; label: string; sub?: string; 
     <div className="stat">
       <div className="n">{n}</div>
       <div className="l">{label}</div>
-      {sub && <div className={`small ${bad ? "err-text" : "muted"}`} style={{ margin: 0 }}>{sub}</div>}
+      {sub && (
+        <div className={`small ${bad ? "err-text" : "muted"}`} style={{ margin: 0 }}>
+          {sub}
+        </div>
+      )}
     </div>
   );
 }
@@ -129,10 +139,14 @@ function Scheduler({ s, now }: { s: AdminResponse["scheduler"]; now: string }) {
     <div className="card small spread">
       <div>
         <b>Scheduler</b>{" "}
-        <span className={`pill ${bad ? "bad" : "on"}`}>{bad ? (stale ? "not seen recently" : "last run failed") : "running"}</span>
+        <span className={`pill ${bad ? "bad" : "on"}`}>
+          {bad ? (stale ? "not seen recently" : "last run failed") : "running"}
+        </span>
       </div>
       <div className="muted">
-        {s.lastTickAt ? `Last checked FPL ${formatDate(s.lastTickAt)} (${s.lastTickStatus ?? "unknown"})` : "No runs recorded yet"}
+        {s.lastTickAt
+          ? `Last checked FPL ${formatDate(s.lastTickAt)} (${s.lastTickStatus ?? "unknown"})`
+          : "No runs recorded yet"}
         {" · "}
         {s.lastGameweekProcessed != null ? `GW${s.lastGameweekProcessed} processed` : "no gameweek processed yet"}
       </div>
@@ -174,7 +188,12 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 }
 
 function Table({ head, rows, empty, children }: { head: string[]; rows: number; empty: string; children: ReactNode }) {
-  if (!rows) return <p className="small muted" style={{ margin: 0 }}>{empty}</p>;
+  if (!rows)
+    return (
+      <p className="small muted" style={{ margin: 0 }}>
+        {empty}
+      </p>
+    );
   return (
     <div className="table-scroll">
       <table className="data">

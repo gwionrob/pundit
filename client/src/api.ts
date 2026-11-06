@@ -177,7 +177,10 @@ export function useGenerateReport() {
 // ---------- reports ----------
 
 export function useReport(slug: string) {
-  return useQuery({ queryKey: keys.report(slug), queryFn: () => request<ReportResponse>("GET", `/api/reports/${slug}`) });
+  return useQuery({
+    queryKey: keys.report(slug),
+    queryFn: () => request<ReportResponse>("GET", `/api/reports/${slug}`),
+  });
 }
 
 export function useDeliverReport(slug: string) {

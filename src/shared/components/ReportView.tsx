@@ -38,7 +38,13 @@ export function ReportView({
 
       <div className="actions">
         <div className="stack">
-          <a className="btn wa" href={data.whatsappUrl} target="_blank" rel="noopener noreferrer" style={{ width: "100%" }}>
+          <a
+            className="btn wa"
+            href={data.whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ width: "100%" }}
+          >
             Send to WhatsApp
           </a>
           {serverRendered ? (

@@ -132,7 +132,9 @@ export function createApp(deps: AppDeps) {
   app.notFound((c) => c.html(renderNotFoundPage({ loggedIn: Boolean(c.get("user")) }), 404));
   app.onError((err, c) => {
     console.error("[web] unhandled error:", err);
-    return c.req.path.startsWith("/api/") ? apiError(c, 500, "Something went wrong.") : c.text("Something went wrong.", 500);
+    return c.req.path.startsWith("/api/")
+      ? apiError(c, 500, "Something went wrong.")
+      : c.text("Something went wrong.", 500);
   });
 
   return app;

@@ -44,7 +44,12 @@ export function channelRoutes(ctx: WebContext) {
     const webhookUrl = body.webhookUrl.trim();
     const label = body.label?.trim().slice(0, MAX_LABEL_LENGTH) || "Discord channel";
     if (!isDiscordWebhookUrl(webhookUrl)) {
-      return apiError(c, 422, "That isn't a Discord webhook URL. It should start with https://discord.com/api/webhooks/.", "validation");
+      return apiError(
+        c,
+        422,
+        "That isn't a Discord webhook URL. It should start with https://discord.com/api/webhooks/.",
+        "validation",
+      );
     }
     if (repo.findChannel(user.id, "discord", (ch) => ch.config.webhookUrl === webhookUrl)) {
       return apiError(c, 409, "That Discord channel is already linked.", "conflict");

@@ -76,7 +76,13 @@ const navFor = (loggedIn: boolean) =>
 
 export function renderLandingPage(opts: { loggedIn: boolean; appUrl: string }): string {
   return html(
-    <Document meta={{ title: "Pundit: the weekly bulletin for your mini-league", description: SITE_DESCRIPTION, url: opts.appUrl }}>
+    <Document
+      meta={{
+        title: "Pundit: the weekly bulletin for your mini-league",
+        description: SITE_DESCRIPTION,
+        url: opts.appUrl,
+      }}
+    >
       <Landing loggedIn={opts.loggedIn} sampleHtml={SAMPLE_HTML} />
     </Document>,
   );
@@ -97,7 +103,12 @@ export function renderReportPage(data: ReportResponse, opts: { loggedIn: boolean
   const { report } = data;
   return html(
     <Document
-      meta={{ title: `${report.title} — ${report.leagueName}`, description: ogDescription(data.text.plain), url: data.url, noindex: true }}
+      meta={{
+        title: `${report.title} — ${report.leagueName}`,
+        description: ogDescription(data.text.plain),
+        url: data.url,
+        noindex: true,
+      }}
       script={COPY_SCRIPT}
     >
       <PageShell brandHref={opts.loggedIn ? "/dashboard" : "/"} nav={navFor(opts.loggedIn)}>

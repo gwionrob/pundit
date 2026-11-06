@@ -93,7 +93,11 @@ describe("climbers & fallers", () => {
 
 describe("captaincy", () => {
   it("doubles the captain's points", () => {
-    const c = resolveCaptain(makePicks({ points: 0, total: 0, captain: 1, vice: 2 }), livePointsMap(makeLive({ 1: [9, 90], 2: [3, 90] })), nameOf);
+    const c = resolveCaptain(
+      makePicks({ points: 0, total: 0, captain: 1, vice: 2 }),
+      livePointsMap(makeLive({ 1: [9, 90], 2: [3, 90] })),
+      nameOf,
+    );
     expect(c).toMatchObject({ name: "Haaland", haul: 18, multiplier: 2, tripleCaptain: false, viceUsed: false });
   });
 
@@ -104,7 +108,11 @@ describe("captaincy", () => {
   });
 
   it("falls back to the vice-captain when the captain didn't play", () => {
-    const c = resolveCaptain(makePicks({ points: 0, total: 0, captain: 1, vice: 3 }), livePointsMap(makeLive({ 1: [0, 0], 3: [7, 80] })), nameOf);
+    const c = resolveCaptain(
+      makePicks({ points: 0, total: 0, captain: 1, vice: 3 }),
+      livePointsMap(makeLive({ 1: [0, 0], 3: [7, 80] })),
+      nameOf,
+    );
     expect(c).toMatchObject({ name: "Palmer", haul: 14, viceUsed: true });
   });
 
@@ -156,7 +164,12 @@ describe("monthly", () => {
 
   it("handles deadlines right at a month boundary", () => {
     const ev = (id: number, deadline_time: string) => ({ ...bs.events[0]!, id, deadline_time });
-    const events = [ev(1, "2026-09-30T23:59:00Z"), ev(2, "2026-10-01T00:00:00Z"), ev(3, "2026-10-31T23:59:59Z"), ev(4, "2026-11-01T00:00:00Z")];
+    const events = [
+      ev(1, "2026-09-30T23:59:00Z"),
+      ev(2, "2026-10-01T00:00:00Z"),
+      ev(3, "2026-10-31T23:59:59Z"),
+      ev(4, "2026-11-01T00:00:00Z"),
+    ];
     expect(gameweeksInMonth(events, 10, 2026)).toEqual([2, 3]);
     expect(gameweeksInMonth(events, 10, 2025)).toEqual([]);
   });
@@ -165,14 +178,41 @@ describe("monthly", () => {
     const h = (gws: [number, number, number][]): RawEntryHistory => ({
       chips: [],
       current: gws.map(([event, points, cost]) => ({
-        event, points, event_transfers_cost: cost, total_points: 0, rank: null, overall_rank: null,
-        bank: 0, value: 0, event_transfers: 0, points_on_bench: 0,
+        event,
+        points,
+        event_transfers_cost: cost,
+        total_points: 0,
+        rank: null,
+        overall_rank: null,
+        bank: 0,
+        value: 0,
+        event_transfers: 0,
+        points_on_bench: 0,
       })),
     });
     const histories = new Map([
-      [1, h([[5, 100, 0], [6, 50, 4], [7, 60, 0]])], // GW6-7: 106
-      [2, h([[6, 56, 0], [7, 50, 0]])], // 106
-      [3, h([[6, 40, 0], [7, 30, 0]])], // 70
+      [
+        1,
+        h([
+          [5, 100, 0],
+          [6, 50, 4],
+          [7, 60, 0],
+        ]),
+      ], // GW6-7: 106
+      [
+        2,
+        h([
+          [6, 56, 0],
+          [7, 50, 0],
+        ]),
+      ], // 106
+      [
+        3,
+        h([
+          [6, 40, 0],
+          [7, 30, 0],
+        ]),
+      ], // 70
     ]);
     const t = monthlyTable([row(1, "Ann"), row(2, "Ben"), row(3, "Cat")], histories, [6, 7]);
     expect(t.map((r) => [r.managerName, r.points, r.rank])).toEqual([
@@ -186,7 +226,9 @@ describe("monthly", () => {
     const hist = fixture<RawEntryHistory>("history");
     const standings = fixture<RawStandings>("standings");
     const t = monthlyTable(standings.results.slice(0, 1), new Map([[standings.results[0]!.entry, hist]]), [6, 7, 8, 9]);
-    const expected = hist.current.filter((e) => e.event >= 6 && e.event <= 9).reduce((s, e) => s + e.points - e.event_transfers_cost, 0);
+    const expected = hist.current
+      .filter((e) => e.event >= 6 && e.event <= 9)
+      .reduce((s, e) => s + e.points - e.event_transfers_cost, 0);
     expect(t[0]!.points).toBe(expected);
   });
 });

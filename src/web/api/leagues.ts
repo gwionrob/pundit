@@ -39,7 +39,10 @@ export function leagueRoutes(ctx: WebContext) {
   app.get("/", (c) => {
     const user = currentUser(c);
     const leagues = repo.listLeagues(user.id).map((l) => toLeagueSummary(repo, l));
-    const body: LeaguesResponse = { leagues, limits: { maxLeagues: limitsFor(user.plan).maxLeagues, used: leagues.length } };
+    const body: LeaguesResponse = {
+      leagues,
+      limits: { maxLeagues: limitsFor(user.plan).maxLeagues, used: leagues.length },
+    };
     return c.json(body);
   });
 
@@ -49,13 +52,24 @@ export function leagueRoutes(ctx: WebContext) {
     if (body instanceof Response) return body;
     const fplId = core.parseLeagueId(body.league);
     if (fplId == null) {
-      return apiError(c, 422, "That doesn't look like a league ID or link. It should contain a number like 123456.", "validation");
+      return apiError(
+        c,
+        422,
+        "That doesn't look like a league ID or link. It should contain a number like 123456.",
+        "validation",
+      );
     }
-    if (repo.findLeagueByFplId(user.id, fplId)) return apiError(c, 409, "You've already added that league.", "conflict");
+    if (repo.findLeagueByFplId(user.id, fplId))
+      return apiError(c, 409, "You've already added that league.", "conflict");
     // Check the plan limit before calling FPL, so we don't hit their API for nothing.
     const { maxLeagues } = limitsFor(user.plan);
     if (repo.countLeagues(user.id) >= maxLeagues) {
-      return apiError(c, 409, `Your plan allows ${maxLeagues} league${maxLeagues === 1 ? "" : "s"}. Remove one to add another.`, "limit");
+      return apiError(
+        c,
+        409,
+        `Your plan allows ${maxLeagues} league${maxLeagues === 1 ? "" : "s"}. Remove one to add another.`,
+        "limit",
+      );
     }
     try {
       const info = await core.getLeagueInfo(fplId);

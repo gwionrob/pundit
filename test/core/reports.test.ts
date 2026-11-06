@@ -15,7 +15,8 @@ function fixtureClient() {
     const path = new URL(url).pathname;
     let body: unknown;
     if (path.endsWith("/bootstrap-static/")) body = bs;
-    else if (path.includes("/standings/")) body = { league: standings.league, standings: { page: 1, has_next: false, results: standings.results } };
+    else if (path.includes("/standings/"))
+      body = { league: standings.league, standings: { page: 1, has_next: false, results: standings.results } };
     else if (path.includes("/event/9/live/")) body = live;
     else if (/\/entry\/\d+\/event\/9\/picks\//.test(path)) body = picks[path.split("/")[3]!];
     else if (/\/entry\/\d+\/history\//.test(path)) body = history;

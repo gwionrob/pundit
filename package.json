@@ -13,6 +13,8 @@
     "start": "NODE_ENV=production tsx --env-file-if-exists=.env src/index.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p client",
     "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "vitest run"
   },
   "dependencies": {
@@ -36,9 +38,11 @@
     "concurrently": "^9.2.5",
     "esbuild": "^0.27.7",
     "eslint": "^9.39.5",
+    "eslint-config-prettier": "10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.14.0",
     "jsdom": "^27.4.0",
+    "prettier": "3.9.10",
     "react-router": "^7.18.5",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1",

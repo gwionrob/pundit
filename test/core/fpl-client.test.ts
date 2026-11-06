@@ -5,7 +5,8 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 
 describe("FplClient", () => {
   it("retries 5xx/429 with backoff then succeeds", async () => {
-    const fetch = vi.fn()
+    const fetch = vi
+      .fn()
       .mockResolvedValueOnce(new Response("oops", { status: 502 }))
       .mockResolvedValueOnce(new Response("slow down", { status: 429 }))
       .mockResolvedValueOnce(json({ events: [], elements: [] }));
@@ -32,9 +33,9 @@ describe("FplClient", () => {
   it("follows standings pagination and caches", async () => {
     const page = (n: number, has_next: boolean) =>
       json({ league: { id: 7, name: "L" }, standings: { page: n, has_next, results: [{ entry: n }] } });
-    const fetch = vi.fn().mockImplementation(async (url: string) =>
-      url.endsWith("page_standings=1") ? page(1, true) : page(2, false),
-    );
+    const fetch = vi
+      .fn()
+      .mockImplementation(async (url: string) => (url.endsWith("page_standings=1") ? page(1, true) : page(2, false)));
     const client = new FplClient({ fetch });
     const s = await client.standings(7);
     expect(s.results.map((r) => r.entry)).toEqual([1, 2]);
@@ -43,7 +44,8 @@ describe("FplClient", () => {
   });
 
   it("doesn't cache failures", async () => {
-    const fetch = vi.fn()
+    const fetch = vi
+      .fn()
       .mockResolvedValueOnce(new Response("", { status: 404 }))
       .mockResolvedValueOnce(json({ current: [], chips: [] }));
     const client = new FplClient({ fetch });

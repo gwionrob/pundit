@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { endSession, hashPassword, RateLimiter, startSession, userForToken, verifyPassword } from "../../src/web/auth.ts";
+import {
+  endSession,
+  hashPassword,
+  RateLimiter,
+  startSession,
+  userForToken,
+  verifyPassword,
+} from "../../src/web/auth.ts";
 import { memRepo } from "./helpers.ts";
 
 const SECRET = "test-secret-test-secret";

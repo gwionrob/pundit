@@ -11,13 +11,33 @@ const ADMIN_ME: MeResponse = { ...ME, user: { ...ME.user!, isAdmin: true } };
 
 const DASHBOARD: AdminResponse = {
   generatedAt: "2026-11-06T12:00:00.000Z",
-  counts: { users: 12, usersSince: 3, leagues: 9, fplLeagues: 8, reports: 40, reportsSince: 9, channels: 4, deliveriesSent: 7, deliveriesFailed: 1 },
+  counts: {
+    users: 12,
+    usersSince: 3,
+    leagues: 9,
+    fplLeagues: 8,
+    reports: 40,
+    reportsSince: 9,
+    channels: 4,
+    deliveriesSent: 7,
+    deliveriesFailed: 1,
+  },
   scheduler: { lastGameweekProcessed: 10, lastTickAt: "2026-11-06T11:50:00.000Z", lastTickStatus: "up-to-date" },
-  users: [{ id: 2, email: "ann@example.com", plan: "free", createdAt: "2026-11-05T10:00:00.000Z", leagues: 1, channels: 1 }],
+  users: [
+    { id: 2, email: "ann@example.com", plan: "free", createdAt: "2026-11-05T10:00:00.000Z", leagues: 1, channels: 1 },
+  ],
   leagues: [],
   reports: [],
   deliveries: [
-    { slug: "abc", league: "The Sunday Lot", kind: "discord", label: "#fpl", status: "failed", error: "Discord webhook failed (404)", at: "2026-11-05T10:00:00.000Z" },
+    {
+      slug: "abc",
+      league: "The Sunday Lot",
+      kind: "discord",
+      label: "#fpl",
+      status: "failed",
+      error: "Discord webhook failed (404)",
+      at: "2026-11-05T10:00:00.000Z",
+    },
   ],
 };
 

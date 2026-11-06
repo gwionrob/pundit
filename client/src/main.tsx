@@ -11,13 +11,15 @@ const queryClient = new QueryClient({
   // the route guards then send the user to /login.
   queryCache: new QueryCache({
     onError: (err) => {
-      if (err instanceof ApiRequestError && err.status === 401) void queryClient.invalidateQueries({ queryKey: keys.me });
+      if (err instanceof ApiRequestError && err.status === 401)
+        void queryClient.invalidateQueries({ queryKey: keys.me });
     },
   }),
   defaultOptions: {
     queries: {
       // Don't retry client errors (404, 401, validation); retry network/server errors once.
-      retry: (failures, err) => !(err instanceof ApiRequestError && err.status >= 400 && err.status < 500) && failures < 1,
+      retry: (failures, err) =>
+        !(err instanceof ApiRequestError && err.status >= 400 && err.status < 500) && failures < 1,
       refetchOnWindowFocus: false,
     },
   },

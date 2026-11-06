@@ -131,7 +131,9 @@ export async function runTick(deps: TickDeps): Promise<TickResult> {
   }
 
   repo.setState(LAST_GW_KEY, String(latest));
-  log(`processed GW${latest}: ${reports} bulletin(s)${monthly.length ? `, monthly ${monthly[0]!.year}-${monthly[0]!.month}` : ""}`);
+  log(
+    `processed GW${latest}: ${reports} bulletin(s)${monthly.length ? `, monthly ${monthly[0]!.year}-${monthly[0]!.month}` : ""}`,
+  );
   return { status: "processed", gameweek: latest, reports, monthly };
 }
 

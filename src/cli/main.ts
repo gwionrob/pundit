@@ -38,7 +38,10 @@ const UTF8_ENV = { ...process.env, LANG: "en_US.UTF-8", LC_ALL: "en_US.UTF-8" };
 /** Run a command, optionally feeding stdin. Rejects with ENOENT if missing. */
 function exec(cmd: string, args: string[], input?: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const child = spawn(cmd, args, { stdio: [input === undefined ? "ignore" : "pipe", "ignore", "ignore"], env: UTF8_ENV });
+    const child = spawn(cmd, args, {
+      stdio: [input === undefined ? "ignore" : "pipe", "ignore", "ignore"],
+      env: UTF8_ENV,
+    });
     child.on("error", reject);
     child.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`${cmd} exited with ${code}`))));
     if (input !== undefined) child.stdin!.end(input);

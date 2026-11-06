@@ -12,18 +12,21 @@ import {
   movementArrow,
   type ManagerGameweek,
 } from "./stats.ts";
-import type {
-  GameState,
-  LeagueInfo,
-  Report,
-  ReportLine,
-  ReportSection,
-  Segment,
-} from "./types.ts";
+import type { GameState, LeagueInfo, Report, ReportLine, ReportSection, Segment } from "./types.ts";
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 const line = (...segments: Segment[]): ReportLine => ({ segments });
@@ -191,8 +194,12 @@ export function composeGameweekReport(input: GameweekReportInput): Report {
     sections.push({
       heading: s.winners.length > 1 ? "🏆 Gameweek winners" : "🏆 Gameweek winner",
       lines: [
-        line(...managers(s.winners), " — ", b(pts(top.net)),
-          ...(s.winners.length === 1 && top.transfersCost ? [` (after a -${top.transfersCost} hit)`] : [])),
+        line(
+          ...managers(s.winners),
+          " — ",
+          b(pts(top.net)),
+          ...(s.winners.length === 1 && top.transfersCost ? [` (after a -${top.transfersCost} hit)`] : []),
+        ),
       ],
     });
   }
@@ -202,8 +209,12 @@ export function composeGameweekReport(input: GameweekReportInput): Report {
     sections.push({
       heading: "🥄 Wooden spoon",
       lines: [
-        line(...managers(s.spoons), " — ", b(pts(bottom.net)),
-          ...(s.spoons.length === 1 && bottom.transfersCost ? [` (incl. a -${bottom.transfersCost} hit 😬)`] : [])),
+        line(
+          ...managers(s.spoons),
+          " — ",
+          b(pts(bottom.net)),
+          ...(s.spoons.length === 1 && bottom.transfersCost ? [` (incl. a -${bottom.transfersCost} hit 😬)`] : []),
+        ),
       ],
     });
   }
@@ -225,31 +236,33 @@ export function composeGameweekReport(input: GameweekReportInput): Report {
   if (s.climbers) {
     sections.push({
       heading: "📈 Biggest climber",
-      lines: [line(...managers(s.climbers.managers), ` — up ${s.climbers.places} place${s.climbers.places === 1 ? "" : "s"}`)],
+      lines: [
+        line(...managers(s.climbers.managers), ` — up ${s.climbers.places} place${s.climbers.places === 1 ? "" : "s"}`),
+      ],
     });
   }
   if (s.fallers) {
     sections.push({
       heading: "📉 Biggest faller",
-      lines: [line(...managers(s.fallers.managers), ` — down ${s.fallers.places} place${s.fallers.places === 1 ? "" : "s"}`)],
+      lines: [
+        line(...managers(s.fallers.managers), ` — down ${s.fallers.places} place${s.fallers.places === 1 ? "" : "s"}`),
+      ],
     });
   }
 
   const captainLines: ReportLine[] = [];
   if (s.bestCaptains.length) {
     const c = s.bestCaptains[0]!.captain!;
-    captainLines.push(
-      line("Best: ", ...managers(s.bestCaptains), ` — ${capDesc(s.bestCaptains)} `, b(pts(c.haul))),
-    );
+    captainLines.push(line("Best: ", ...managers(s.bestCaptains), ` — ${capDesc(s.bestCaptains)} `, b(pts(c.haul))));
   }
   if (s.worstCaptains.length) {
     const c = s.worstCaptains[0]!.captain!;
-    captainLines.push(
-      line("Worst: ", ...managers(s.worstCaptains), ` — ${capDesc(s.worstCaptains)} `, b(pts(c.haul))),
-    );
+    captainLines.push(line("Worst: ", ...managers(s.worstCaptains), ` — ${capDesc(s.worstCaptains)} `, b(pts(c.haul))));
   }
   if (s.mostCaptained && input.managers.length > 1) {
-    captainLines.push(line("Most captained: ", b(s.mostCaptained.name), ` (${s.mostCaptained.count}/${input.managers.length})`));
+    captainLines.push(
+      line("Most captained: ", b(s.mostCaptained.name), ` (${s.mostCaptained.count}/${input.managers.length})`),
+    );
   }
   if (captainLines.length) sections.push({ heading: "©️ Captaincy", lines: captainLines });
 
@@ -277,9 +290,9 @@ export function composeGameweekReport(input: GameweekReportInput): Report {
   if (s.table.length) {
     sections.push({
       heading: "🔝 Top 5",
-      lines: s.table.slice(0, 5).map((m) =>
-        line(`${m.rank}. `, b(m.managerName), ` — ${m.total} (${movementArrow(m.prevRank, m.rank)})`),
-      ),
+      lines: s.table
+        .slice(0, 5)
+        .map((m) => line(`${m.rank}. `, b(m.managerName), ` — ${m.total} (${movementArrow(m.prevRank, m.rank)})`)),
     });
   }
 
@@ -300,11 +313,15 @@ export function composeGameweekReport(input: GameweekReportInput): Report {
 }
 
 function capDesc(list: ManagerGameweek[]): string {
-  const caps = [...new Set(list.map((m) => {
-    const c = m.captain!;
-    const tags = [c.tripleCaptain ? "TC" : "", c.viceUsed ? "vice" : ""].filter(Boolean).join(", ");
-    return tags ? `${c.name} (${tags})` : c.name;
-  }))];
+  const caps = [
+    ...new Set(
+      list.map((m) => {
+        const c = m.captain!;
+        const tags = [c.tripleCaptain ? "TC" : "", c.viceUsed ? "vice" : ""].filter(Boolean).join(", ");
+        return tags ? `${c.name} (${tags})` : c.name;
+      }),
+    ),
+  ];
   return joinNames(caps);
 }
 
@@ -354,14 +371,13 @@ export async function buildMonthlyReport(
   const table = monthlyTable(rows, histories, gameweeks);
   const allFinished = gameweeks.every((gw) => bs.events.find((e) => e.id === gw)?.finished);
 
-  const gwLabel = gameweeks.length === 1
-    ? `GW${gameweeks[0]}`
-    : `GW${gameweeks[0]}–${gameweeks.at(-1)}`;
+  const gwLabel = gameweeks.length === 1 ? `GW${gameweeks[0]}` : `GW${gameweeks[0]}–${gameweeks.at(-1)}`;
 
   return {
     ...base,
     subtitle: [standings.league.name, `${monthName} ${year}`, gwLabel, allFinished ? "" : "so far"]
-      .filter(Boolean).join(" · "),
+      .filter(Boolean)
+      .join(" · "),
     sections: composeMonthlySections(table, capped, gameweeks.filter((g) => playable.has(g)).length === 0),
   };
 }
@@ -384,9 +400,9 @@ export function composeMonthlySections(
   const medals = ["🥇", "🥈", "🥉"];
   sections.push({
     heading: "🏅 Monthly table",
-    lines: table.slice(0, 10).map((r) =>
-      line(`${r.rank <= 3 ? medals[r.rank - 1] : `${r.rank}.`} `, b(r.managerName), ` — ${pts(r.points)}`),
-    ),
+    lines: table
+      .slice(0, 10)
+      .map((r) => line(`${r.rank <= 3 ? medals[r.rank - 1] : `${r.rank}.`} `, b(r.managerName), ` — ${pts(r.points)}`)),
   });
 
   if (table.length > 1) {
@@ -425,15 +441,22 @@ export async function buildStandingsReport(
     leagueName: standings.league.name,
     title: "League Standings",
     subtitle: [standings.league.name, state.currentEvent ? `after GW${state.currentEvent}` : ""]
-      .filter(Boolean).join(" · "),
+      .filter(Boolean)
+      .join(" · "),
     period: state.currentEvent ? { gameweek: state.currentEvent } : {},
     sections: rows.length
-      ? [{
-          heading: `📊 Top ${Math.min(top, standings.results.length)}`,
-          lines: rows.map((r) =>
-            line(`${r.rank}. `, b(r.player_name), ` (${r.entry_name}) — ${r.total} (${movementArrow(r.last_rank, r.rank)})`),
-          ),
-        }]
+      ? [
+          {
+            heading: `📊 Top ${Math.min(top, standings.results.length)}`,
+            lines: rows.map((r) =>
+              line(
+                `${r.rank}. `,
+                b(r.player_name),
+                ` (${r.entry_name}) — ${r.total} (${movementArrow(r.last_rank, r.rank)})`,
+              ),
+            ),
+          },
+        ]
       : [{ heading: "🤷 Empty league", lines: [line("No managers in this league yet.")] }],
     generatedAt: now(),
   };

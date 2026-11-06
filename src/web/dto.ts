@@ -2,14 +2,7 @@
 import { renderReport } from "../core/index.ts";
 import { limitsFor, type Channel, type League, type Repo, type StoredReport, type User } from "../db/repo.ts";
 import { reportFooter, reportUrl, whatsappShareUrl } from "../delivery/whatsapp.ts";
-import type {
-  ChannelDto,
-  LeagueDetail,
-  LeagueSummary,
-  ReportResponse,
-  ReportSummary,
-  UserDto,
-} from "../shared/api.ts";
+import type { ChannelDto, LeagueDetail, LeagueSummary, ReportResponse, ReportSummary, UserDto } from "../shared/api.ts";
 
 export const toUserDto = (u: User, isAdmin = false): UserDto => ({
   id: u.id,

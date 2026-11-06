@@ -11,7 +11,10 @@ const report: Report = {
   period: { gameweek: 9 },
   generatedAt: "2026-11-06T00:00:00Z",
   sections: [
-    { heading: "🏆 Gameweek winner", lines: [{ segments: [{ bold: "*Mo*_the_~king~`" }, " (A&B <FC>) — ", { bold: "78 pts" }] }] },
+    {
+      heading: "🏆 Gameweek winner",
+      lines: [{ segments: [{ bold: "*Mo*_the_~king~`" }, " (A&B <FC>) — ", { bold: "78 pts" }] }],
+    },
     { heading: "📊 Averages", lines: [{ segments: ["League: 50 > Global: 47 | #1 [link](x)"] }] },
   ],
 };
@@ -47,7 +50,9 @@ describe("renderReport", () => {
 
   it("plain: no markup", () => {
     const out = renderReport(report, "plain");
-    expect(out.startsWith("Gameweek 9 Bulletin\nTom & Jerry <3\n\n🏆 Gameweek winner\n*Mo*_the_~king~` (A&B <FC>) — 78 pts")).toBe(true);
+    expect(
+      out.startsWith("Gameweek 9 Bulletin\nTom & Jerry <3\n\n🏆 Gameweek winner\n*Mo*_the_~king~` (A&B <FC>) — 78 pts"),
+    ).toBe(true);
   });
 
   it("html: fully escaped fragment", () => {
@@ -74,7 +79,15 @@ describe("renderReport", () => {
   });
 
   it("terminal (colour): ANSI bold/colour that nests cleanly, arrows coloured", () => {
-    const moves: Report = { ...report, sections: [{ heading: "🔝 Top 5", lines: [{ segments: ["1. ", { bold: "Ann" }, " — 627 (▲1)"] }, { segments: ["2. Ben — 612 (▼2)"] }] }] };
+    const moves: Report = {
+      ...report,
+      sections: [
+        {
+          heading: "🔝 Top 5",
+          lines: [{ segments: ["1. ", { bold: "Ann" }, " — 627 (▲1)"] }, { segments: ["2. Ben — 612 (▼2)"] }],
+        },
+      ],
+    };
     const out = renderReport(moves, "terminal");
     expect(out).toContain("\x1b[1;35mGameweek 9 Bulletin\x1b[22;39m");
     expect(out).toContain("\x1b[1;36m🔝 Top 5\x1b[22;39m");

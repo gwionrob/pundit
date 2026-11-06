@@ -2,13 +2,7 @@
  * Pure stat functions over raw FPL data. No I/O here so everything is
  * testable from fixtures.
  */
-import type {
-  RawEntryHistory,
-  RawEvent,
-  RawLive,
-  RawPicks,
-  RawStandingRow,
-} from "./fpl-types.ts";
+import type { RawEntryHistory, RawEvent, RawLive, RawPicks, RawStandingRow } from "./fpl-types.ts";
 
 /** Max members we fetch per-entry data for (keeps API load sane). */
 export const ENTRY_FETCH_CAP = 50;
@@ -100,9 +94,7 @@ export function resolveCaptain(
 }
 
 export function livePointsMap(live: RawLive): Map<number, { points: number; minutes: number }> {
-  return new Map(
-    live.elements.map((e) => [e.id, { points: e.stats.total_points, minutes: e.stats.minutes }]),
-  );
+  return new Map(live.elements.map((e) => [e.id, { points: e.stats.total_points, minutes: e.stats.minutes }]));
 }
 
 /**
@@ -122,22 +114,24 @@ export function buildManagerGameweeks(
     if (!p) return [];
     const h = p.entry_history;
     const n = net(h.points, h.event_transfers_cost);
-    return [{
-      entryId: row.entry,
-      managerName: row.player_name,
-      teamName: row.entry_name,
-      points: h.points,
-      transfersCost: h.event_transfers_cost,
-      net: n,
-      total: h.total_points,
-      prevTotal: h.total_points - n,
-      // prevTotal of 0 means GW1 or a manager who joined this GW: no movement.
-      hadPrior: h.total_points - n !== 0,
-      benchPoints: h.points_on_bench,
-      transfers: h.event_transfers,
-      chip: p.active_chip,
-      captain: resolveCaptain(p, liveMap, elementName),
-    }];
+    return [
+      {
+        entryId: row.entry,
+        managerName: row.player_name,
+        teamName: row.entry_name,
+        points: h.points,
+        transfersCost: h.event_transfers_cost,
+        net: n,
+        total: h.total_points,
+        prevTotal: h.total_points - n,
+        // prevTotal of 0 means GW1 or a manager who joined this GW: no movement.
+        hadPrior: h.total_points - n !== 0,
+        benchPoints: h.points_on_bench,
+        transfers: h.event_transfers,
+        chip: p.active_chip,
+        captain: resolveCaptain(p, liveMap, elementName),
+      },
+    ];
   });
 
   const ranks = competitionRanks(base.map((m) => m.total));
@@ -169,12 +163,20 @@ export function gameweekStats(managers: ManagerGameweek[]): GameweekStats {
     ? Math.round((managers.reduce((s, m) => s + m.net, 0) / managers.length) * 10) / 10
     : 0;
 
-  const movement = managers.filter((m) => m.prevRank !== null).map((m) => ({
-    m,
-    delta: m.prevRank! - m.rank,
-  }));
-  const up = maxBy(movement.filter((x) => x.delta > 0), (x) => x.delta);
-  const down = minBy(movement.filter((x) => x.delta < 0), (x) => x.delta);
+  const movement = managers
+    .filter((m) => m.prevRank !== null)
+    .map((m) => ({
+      m,
+      delta: m.prevRank! - m.rank,
+    }));
+  const up = maxBy(
+    movement.filter((x) => x.delta > 0),
+    (x) => x.delta,
+  );
+  const down = minBy(
+    movement.filter((x) => x.delta < 0),
+    (x) => x.delta,
+  );
 
   const withCaptain = managers.filter((m) => m.captain);
   const captainCounts = new Map<string, number>();
@@ -238,13 +240,15 @@ export function monthlyTable(
     const h = histories.get(row.entry);
     if (!h) return [];
     const counted = h.current.filter((e) => gwSet.has(e.event));
-    return [{
-      entryId: row.entry,
-      managerName: row.player_name,
-      teamName: row.entry_name,
-      points: counted.reduce((s, e) => s + net(e.points, e.event_transfers_cost), 0),
-      gameweeksPlayed: counted.length,
-    }];
+    return [
+      {
+        entryId: row.entry,
+        managerName: row.player_name,
+        teamName: row.entry_name,
+        points: counted.reduce((s, e) => s + net(e.points, e.event_transfers_cost), 0),
+        gameweeksPlayed: counted.length,
+      },
+    ];
   });
   const ranks = competitionRanks(base.map((r) => r.points));
   return base

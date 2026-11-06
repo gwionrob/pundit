@@ -9,7 +9,13 @@ import type { RenderFormat } from "../core/types.ts";
 export const COMMANDS = ["gameweek", "monthly", "standings"] as const;
 export type Command = (typeof COMMANDS)[number];
 
-export const FORMATS = ["terminal", "whatsapp", "telegram", "discord", "plain"] as const satisfies readonly RenderFormat[];
+export const FORMATS = [
+  "terminal",
+  "whatsapp",
+  "telegram",
+  "discord",
+  "plain",
+] as const satisfies readonly RenderFormat[];
 export type CliFormat = (typeof FORMATS)[number];
 
 export type CliAction =
@@ -31,7 +37,10 @@ export type CliAction =
 
 /** Bad usage: main prints the message plus usage and exits 2. */
 export class UsageError extends Error {
-  constructor(message: string, readonly topic?: Command) {
+  constructor(
+    message: string,
+    readonly topic?: Command,
+  ) {
     super(message);
     this.name = "UsageError";
   }
@@ -99,7 +108,9 @@ function positiveInt(value: string | undefined, flag: string, max = Number.MAX_S
   if (value === undefined) return undefined;
   const n = Number(value);
   if (!/^\d+$/.test(value) || n < 1 || n > max) {
-    throw new UsageError(`--${flag} must be a whole number${max < Number.MAX_SAFE_INTEGER ? ` from 1 to ${max}` : " above 0"}, got "${value}"`);
+    throw new UsageError(
+      `--${flag} must be a whole number${max < Number.MAX_SAFE_INTEGER ? ` from 1 to ${max}` : " above 0"}, got "${value}"`,
+    );
   }
   return n;
 }
@@ -160,7 +171,10 @@ export function parseCli(argv: string[]): CliAction {
     throw new UsageError("--whatsapp always uses WhatsApp formatting; drop --format", command);
   }
   if (values.copy && format === "terminal") {
-    throw new UsageError("--copy can't copy terminal colours; use --format whatsapp, telegram, discord or plain", command);
+    throw new UsageError(
+      "--copy can't copy terminal colours; use --format whatsapp, telegram, discord or plain",
+      command,
+    );
   }
 
   return {
