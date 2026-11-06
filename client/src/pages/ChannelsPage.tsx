@@ -10,6 +10,7 @@ import {
   useTestChannel,
   useToggleEmail,
 } from "../api.ts";
+import { button, Card, Input, Label, List, Pill } from "../../../src/shared/components/ui.tsx";
 import { FlashNotice, Notice, type Flash } from "../components/Notice.tsx";
 
 export function ChannelsPage() {
@@ -21,29 +22,29 @@ export function ChannelsPage() {
     <>
       <title>Channels · Pundit</title>
       <h1>Channels</h1>
-      <p className="muted">
+      <p className="text-muted">
         Every bulletin has a <b>Send to WhatsApp</b> button: tap it, pick your group and send. Channels below receive
         bulletins automatically.
       </p>
       <FlashNotice flash={status} />
 
-      <div className="card">
+      <Card>
         <h2>Your channels</h2>
-        {channels.isPending && <p className="small muted">Loading…</p>}
+        {channels.isPending && <p className="text-sm text-muted">Loading…</p>}
         {channels.isError && <Notice kind="err">{errorMessage(channels.error)}</Notice>}
         {channels.isSuccess &&
           (channels.data.channels.length ? (
-            <ul className="plain">
+            <List>
               {channels.data.channels.map((ch) => (
                 <ChannelRow key={ch.id} channel={ch} onStatus={setStatus} />
               ))}
-            </ul>
+            </List>
           ) : (
-            <p className="small muted">No channels linked yet.</p>
+            <p className="text-sm text-muted">No channels linked yet.</p>
           ))}
-      </div>
+      </Card>
 
-      <div className="grid">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
         <TelegramCard />
         <DiscordCard onStatus={setStatus} />
         <EmailCard channels={channels.data?.channels ?? []} onStatus={setStatus} />
@@ -71,16 +72,21 @@ function ChannelRow({ channel, onStatus }: { channel: ChannelDto; onStatus: OnSt
     });
 
   return (
-    <li className="spread">
+    <li className="flex flex-wrap items-center justify-between gap-2.5">
       <span>
-        {channel.label} <span className="pill">{channel.kind}</span>{" "}
-        {!channel.active && <span className="pill bad">inactive, re-link to resume</span>}
+        {channel.label} <Pill>{channel.kind}</Pill>{" "}
+        {!channel.active && <Pill tone="bad">inactive, re-link to resume</Pill>}
       </span>
-      <span className="row">
-        <button className="btn sm" type="button" onClick={onTest} disabled={test.isPending}>
+      <span className="flex flex-wrap items-center gap-2.5">
+        <button className={button({ size: "sm" })} type="button" onClick={onTest} disabled={test.isPending}>
           {test.isPending ? "Sending…" : "Send test"}
         </button>
-        <button className="btn sm danger" type="button" onClick={onRemove} disabled={remove.isPending}>
+        <button
+          className={button({ variant: "danger", size: "sm" })}
+          type="button"
+          onClick={onRemove}
+          disabled={remove.isPending}
+        >
           Remove
         </button>
       </span>
@@ -94,30 +100,37 @@ function TelegramCard() {
   const features = me.data?.features;
 
   return (
-    <div className="card">
+    <Card>
       <h2>Telegram group</h2>
       {!features?.telegram ? (
-        <p className="small muted">Telegram isn't set up on this server yet.</p>
+        <p className="text-sm text-muted">Telegram isn't set up on this server yet.</p>
       ) : link.data ? (
-        <div className="stack">
-          <p className="small">Tap the button, choose your group, and the bot links it automatically.</p>
-          <a className="btn primary" href={link.data.url} target="_blank" rel="noopener noreferrer">
+        <div className="space-y-3">
+          <p className="text-sm">Tap the button, choose your group, and the bot links it automatically.</p>
+          <a className={button({ variant: "primary" })} href={link.data.url} target="_blank" rel="noopener noreferrer">
             Add @{features.telegramBotUsername} to a group
           </a>
-          <p className="small muted">This link works once and expires in 30 minutes. Come back here afterwards.</p>
+          <p className="text-sm text-muted">
+            This link works once and expires in 30 minutes. Come back here afterwards.
+          </p>
         </div>
       ) : (
-        <div className="stack">
-          <p className="small">Add our bot to a Telegram group and bulletins will post there automatically.</p>
+        <div className="space-y-3">
+          <p className="text-sm">Add our bot to a Telegram group and bulletins will post there automatically.</p>
           {link.isError && <Notice kind="err">{errorMessage(link.error)}</Notice>}
           <div>
-            <button className="btn primary" type="button" onClick={() => link.mutate()} disabled={link.isPending}>
+            <button
+              className={button({ variant: "primary" })}
+              type="button"
+              onClick={() => link.mutate()}
+              disabled={link.isPending}
+            >
               {link.isPending ? "Getting link…" : "Link a Telegram group"}
             </button>
           </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -141,17 +154,17 @@ function DiscordCard({ onStatus }: { onStatus: OnStatus }) {
   };
 
   return (
-    <div className="card">
+    <Card>
       <h2>Discord channel</h2>
-      <form className="stack" onSubmit={onSubmit}>
-        <p className="small">
+      <form className="space-y-3" onSubmit={onSubmit}>
+        <p className="text-sm">
           In Discord, open <b>Channel settings → Integrations → Webhooks → New webhook</b>, copy its URL and paste it
           here.
         </p>
         {addDiscord.isError && <Notice kind="err">{errorMessage(addDiscord.error)}</Notice>}
         <div>
-          <label htmlFor="webhook">Webhook URL</label>
-          <input
+          <Label htmlFor="webhook">Webhook URL</Label>
+          <Input
             id="webhook"
             type="url"
             required
@@ -161,8 +174,8 @@ function DiscordCard({ onStatus }: { onStatus: OnStatus }) {
           />
         </div>
         <div>
-          <label htmlFor="label">Name (optional)</label>
-          <input
+          <Label htmlFor="label">Name (optional)</Label>
+          <Input
             id="label"
             type="text"
             placeholder="#fpl-banter"
@@ -172,12 +185,12 @@ function DiscordCard({ onStatus }: { onStatus: OnStatus }) {
           />
         </div>
         <div>
-          <button className="btn primary" type="submit" disabled={addDiscord.isPending}>
+          <button className={button({ variant: "primary" })} type="submit" disabled={addDiscord.isPending}>
             {addDiscord.isPending ? "Checking webhook…" : "Add Discord channel"}
           </button>
         </div>
       </form>
-    </div>
+    </Card>
   );
 }
 
@@ -201,17 +214,17 @@ function EmailCard({ channels, onStatus }: { channels: ChannelDto[]; onStatus: O
     );
 
   return (
-    <div className="card">
+    <Card>
       <h2>Email</h2>
-      <p className="small">Get an email with the share button whenever a new bulletin is ready.</p>
+      <p className="text-sm">Get an email with the share button whenever a new bulletin is ready.</p>
       <button
-        className={`btn ${emailOn ? "" : "primary"}`}
+        className={button({ variant: emailOn ? "default" : "primary" })}
         type="button"
         onClick={onToggle}
         disabled={toggle.isPending}
       >
         {emailOn ? "Turn off email" : `Email me at ${email}`}
       </button>
-    </div>
+    </Card>
   );
 }

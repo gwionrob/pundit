@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import type { ChannelDto, LeagueDetail } from "../../../src/shared/api.ts";
 import { errorMessage, useChannels, useDeleteLeague, useLeague, useUpdateLeague } from "../api.ts";
+import { button, Card, Checkbox, List, Pill } from "../../../src/shared/components/ui.tsx";
 import { Notice } from "../components/Notice.tsx";
 import { flashState } from "../components/flash.ts";
 import { KIND_LABEL, formatDate } from "../format.ts";
@@ -11,17 +12,17 @@ export function LeagueSettingsPage() {
   const league = useLeague(id);
   const channels = useChannels();
 
-  if (league.isPending) return <p className="muted">Loading league…</p>;
+  if (league.isPending) return <p className="text-muted">Loading league…</p>;
   if (league.isError) return <Notice kind="err">{errorMessage(league.error)}</Notice>;
 
   return (
     <>
       <title>{`${league.data.name} · Pundit`}</title>
-      <p className="small">
+      <p className="text-sm">
         <Link to="/dashboard">← Your leagues</Link>
       </p>
       <h1>{league.data.name}</h1>
-      <p className="muted">League ID {league.data.fplLeagueId}</p>
+      <p className="text-muted">League ID {league.data.fplLeagueId}</p>
 
       {/* key: reset the form's local state if the saved settings change underneath it */}
       <SettingsForm
@@ -61,68 +62,64 @@ function SettingsForm({ league, channels }: { league: LeagueDetail; channels: Ch
   };
 
   return (
-    <div className="card">
+    <Card>
       <h2>Automatic bulletins</h2>
       {saved && <Notice kind="ok">Settings saved.</Notice>}
       {update.isError && <Notice kind="err">{errorMessage(update.error)}</Notice>}
 
       <form onSubmit={onSubmit}>
-        <label className="check">
-          <input type="checkbox" checked={gameweek} onChange={(e) => setGameweek(e.target.checked)} />
+        <Checkbox checked={gameweek} onChange={(e) => setGameweek(e.target.checked)}>
           After every gameweek
-        </label>
-        <label className="check">
-          <input type="checkbox" checked={monthly} onChange={(e) => setMonthly(e.target.checked)} />
+        </Checkbox>
+        <Checkbox checked={monthly} onChange={(e) => setMonthly(e.target.checked)}>
           Manager of the month, after the last gameweek of each month
-        </label>
+        </Checkbox>
 
-        <h3 style={{ marginTop: 18 }}>Post to</h3>
+        <h3 className="mt-[18px]">Post to</h3>
         {channels.length ? (
           channels.map((ch) => (
-            <label key={ch.id} className="check">
-              <input
-                type="checkbox"
-                checked={channelIds.has(ch.id)}
-                onChange={(e) => toggleChannel(ch.id, e.target.checked)}
-              />
-              {ch.label} <span className="pill">{ch.kind}</span>
-              {!ch.active && <span className="pill bad">inactive</span>}
-            </label>
+            <Checkbox
+              key={ch.id}
+              checked={channelIds.has(ch.id)}
+              onChange={(e) => toggleChannel(ch.id, e.target.checked)}
+            >
+              {ch.label} <Pill>{ch.kind}</Pill> {!ch.active && <Pill tone="bad">inactive</Pill>}
+            </Checkbox>
           ))
         ) : (
-          <p className="small muted">
+          <p className="text-sm text-muted">
             No channels yet. Every bulletin has a one-tap WhatsApp share button, and you can{" "}
             <Link to="/channels">link Telegram, Discord or email</Link> too.
           </p>
         )}
 
-        <button className="btn primary" type="submit" style={{ marginTop: 12 }} disabled={update.isPending}>
+        <button className={button({ variant: "primary", className: "mt-3" })} type="submit" disabled={update.isPending}>
           {update.isPending ? "Saving…" : "Save settings"}
         </button>
       </form>
-    </div>
+    </Card>
   );
 }
 
 function PastBulletins({ league }: { league: LeagueDetail }) {
   return (
-    <div className="card">
+    <Card>
       <h2>Past bulletins</h2>
       {league.reports.length ? (
-        <ul className="plain">
+        <List>
           {league.reports.map((r) => (
-            <li key={r.slug} className="spread">
+            <li key={r.slug} className="flex flex-wrap items-center justify-between gap-2.5">
               <span>
-                <Link to={`/reports/${r.slug}`}>{r.title}</Link> <span className="pill">{KIND_LABEL[r.kind]}</span>
+                <Link to={`/reports/${r.slug}`}>{r.title}</Link> <Pill>{KIND_LABEL[r.kind]}</Pill>
               </span>
-              <span className="small muted">{formatDate(r.createdAt)}</span>
+              <span className="text-sm text-muted">{formatDate(r.createdAt)}</span>
             </li>
           ))}
-        </ul>
+        </List>
       ) : (
-        <p className="muted small">None yet.</p>
+        <p className="text-sm text-muted">None yet.</p>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -138,13 +135,13 @@ function RemoveLeague({ league }: { league: LeagueDetail }) {
   };
 
   return (
-    <div className="card">
+    <Card>
       <h2>Remove league</h2>
-      <p className="small muted">This deletes the league and its past bulletins from your account.</p>
+      <p className="text-sm text-muted">This deletes the league and its past bulletins from your account.</p>
       {remove.isError && <Notice kind="err">{errorMessage(remove.error)}</Notice>}
-      <button className="btn danger" type="button" onClick={onRemove} disabled={remove.isPending}>
+      <button className={button({ variant: "danger" })} type="button" onClick={onRemove} disabled={remove.isPending}>
         {remove.isPending ? "Removing…" : "Remove league"}
       </button>
-    </div>
+    </Card>
   );
 }

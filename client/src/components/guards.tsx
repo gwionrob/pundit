@@ -4,7 +4,7 @@ import { NotFoundPage } from "../pages/NotFoundPage.tsx";
 
 /** Shown while we find out whether the visitor is logged in. */
 function Loading() {
-  return <p className="muted">Loading…</p>;
+  return <p className="text-muted">Loading…</p>;
 }
 
 /** Only for logged-in users; everyone else goes to /login. */

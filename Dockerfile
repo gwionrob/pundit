@@ -18,6 +18,7 @@ COPY --from=build /app/package.json /app/tsconfig.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/src ./src
 COPY --from=build /app/client/dist ./client/dist
+COPY --from=build /app/dist-css ./dist-css
 RUN mkdir -p /data && chown node:node /data
 USER node
 EXPOSE 3000

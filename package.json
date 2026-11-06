@@ -7,8 +7,9 @@
     "node": ">=22.13"
   },
   "scripts": {
-    "dev": "concurrently -k -n api,web -c blue,magenta \"tsx watch --env-file-if-exists=.env src/index.ts\" \"vite\"",
-    "build": "vite build",
+    "dev": "npm run build:css && concurrently -k -n api,web,css -c blue,magenta,cyan \"tsx watch --env-file-if-exists=.env src/index.ts\" \"vite\" \"npm:build:css -- --watch\"",
+    "build": "npm run build:css && vite build",
+    "build:css": "tailwindcss -i src/shared/styles.css -o dist-css/site.css --minify",
     "build:cli": "tsx scripts/build-cli.ts",
     "start": "NODE_ENV=production tsx --env-file-if-exists=.env src/index.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p client",
@@ -28,6 +29,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@tailwindcss/cli": "4.3.4",
+    "@tailwindcss/vite": "4.3.4",
     "@tanstack/react-query": "^5.106.1",
     "@tanstack/react-query-devtools": "^5.106.1",
     "@testing-library/react": "^16.3.3",
@@ -43,7 +46,9 @@
     "globals": "^17.14.0",
     "jsdom": "^27.4.0",
     "prettier": "3.9.10",
+    "prettier-plugin-tailwindcss": "0.8.1",
     "react-router": "^7.18.5",
+    "tailwindcss": "4.3.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1",
     "vite": "^7.3.7",

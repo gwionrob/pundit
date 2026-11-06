@@ -34,7 +34,7 @@ describe("ReportView", () => {
   it("server mode: renders the data-copy-target button and hidden text for the inline script", () => {
     const html = renderToStaticMarkup(<ReportView data={REPORT} />);
     expect(html).toContain(`data-copy-target="${COPY_TEXT_ID}"`);
-    expect(html).toContain(`<pre id="${COPY_TEXT_ID}" class="visually-hidden">`);
+    expect(html).toContain(`<pre id="${COPY_TEXT_ID}" class="sr-only">`);
     expect(html).toContain("*Priya* — 88 pts");
     expect(html).not.toContain("Copied");
   });

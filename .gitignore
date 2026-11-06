@@ -136,3 +136,6 @@ data/
 
 # Built CLI package (npm run build:cli)
 dist-cli/
+
+# Compiled Tailwind CSS for server-rendered pages (npm run build:css)
+dist-css/

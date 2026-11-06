@@ -1,5 +1,5 @@
 import { Link, Outlet, useNavigate } from "react-router";
-import { GuestNav, PageShell } from "../../../src/shared/components/PageShell.tsx";
+import { BRAND, BrandMark, GuestNav, NAV_LINK, PageShell } from "../../../src/shared/components/PageShell.tsx";
 import { useLogout, useMe } from "../api.ts";
 import { FlashNotice } from "./Notice.tsx";
 import { useRouteFlash } from "./flash.ts";
@@ -15,8 +15,8 @@ export function AppLayout() {
       brandHref={loggedIn ? "/dashboard" : "/"}
       brand={
         loggedIn ? (
-          <Link className="brand" to="/dashboard">
-            <span className="mark">P</span> Pundit
+          <Link className={BRAND} to="/dashboard">
+            <BrandMark /> Pundit
           </Link>
         ) : undefined
       }
@@ -40,10 +40,18 @@ function UserNav() {
 
   return (
     <>
-      <Link to="/dashboard">Leagues</Link>
-      <Link to="/channels">Channels</Link>
-      {me.data?.user?.isAdmin && <Link to="/admin">Admin</Link>}
-      <button type="button" onClick={onLogout} disabled={logout.isPending}>
+      <Link className={NAV_LINK} to="/dashboard">
+        Leagues
+      </Link>
+      <Link className={NAV_LINK} to="/channels">
+        Channels
+      </Link>
+      {me.data?.user?.isAdmin && (
+        <Link className={NAV_LINK} to="/admin">
+          Admin
+        </Link>
+      )}
+      <button className={NAV_LINK} type="button" onClick={onLogout} disabled={logout.isPending}>
         Log out
       </button>
     </>
