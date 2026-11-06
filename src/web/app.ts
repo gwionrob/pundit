@@ -14,6 +14,7 @@ import { reportRoutes } from "./api/reports.ts";
 import { RateLimiter, SESSION_COOKIE, userForToken } from "./auth.ts";
 import { apiError, type AppDeps, type Env, type WebContext } from "./context.ts";
 import { toReportResponse } from "./dto.ts";
+import { mountIcons } from "./icons.ts";
 import { createSpa, DEFAULT_SPA_DIR } from "./spa.ts";
 import { renderLandingPage, renderNotFoundPage, renderReportPage } from "./ssr.tsx";
 
@@ -80,6 +81,7 @@ export function createApp(deps: AppDeps) {
 
   // ---------- server-rendered pages ----------
   app.get("/healthz", (c) => c.text("ok"));
+  mountIcons(app);
 
   app.get("/", (c) => c.html(renderLandingPage({ loggedIn: Boolean(c.get("user")), appUrl: config.appUrl })));
 

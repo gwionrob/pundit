@@ -12,6 +12,7 @@ import { Landing } from "../shared/components/Landing.tsx";
 import { GuestNav, PageShell } from "../shared/components/PageShell.tsx";
 import { ReportView } from "../shared/components/ReportView.tsx";
 import { SAMPLE_REPORT } from "./sample-report.ts";
+import { ICON_LINKS } from "./icons.ts";
 
 const STYLES = readFileSync(new URL("../shared/styles.css", import.meta.url), "utf8");
 const SAMPLE_HTML = renderReport(SAMPLE_REPORT, "html");
@@ -37,6 +38,10 @@ function Document({ meta, script, children }: { meta: Meta; script?: string; chi
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{meta.title}</title>
+        <meta name="theme-color" content="#0f766e" />
+        {ICON_LINKS.map((link) => (
+          <link key={link.href} {...link} />
+        ))}
         <meta name="description" content={meta.description} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Pundit" />
