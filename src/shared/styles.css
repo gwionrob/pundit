@@ -1,13 +1,5 @@
-import type { Child, FC } from "hono/jsx";
-import { raw } from "hono/html";
-import type { User } from "../db/repo.ts";
-
-export interface Flash {
-  kind: "ok" | "err";
-  text: string;
-}
-
-const CSS = `
+/* Pundit stylesheet: shared by the React app (imported in client/src/main.tsx) and the
+   server-rendered pages (inlined by the server). Light/dark via prefers-color-scheme. */
 :root{
   --bg:#f7f7f4;--surface:#ffffff;--surface-2:#f0f0ec;--text:#16181d;--muted:#5d6370;--border:#e2e2dc;
   --accent:#0f766e;--accent-ink:#ffffff;--accent-soft:#e3f3f1;--danger:#b42318;--danger-soft:#fdecea;
@@ -81,66 +73,10 @@ ul.plain li:first-child{border-top:0}
 footer.site{border-top:1px solid var(--border);padding:24px 0;color:var(--muted);font-size:14px}
 .actions{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:16px 0 8px;margin-top:8px}
 code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
-`;
-
-export const Layout: FC<{
-  title: string;
-  user?: User | undefined;
-  flash?: Flash | undefined;
-  head?: Child;
-  children?: Child;
-}> = ({ title, user, flash, head, children }) => (
-  <html lang="en">
-    <head>
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <title>{title}</title>
-      <meta name="theme-color" content="#0f766e" />
-      <link
-        rel="icon"
-        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f766e'/%3E%3Ctext x='16' y='22' font-size='17' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='700'%3EP%3C/text%3E%3C/svg%3E"
-      />
-      {head}
-      <style>{raw(CSS)}</style>
-    </head>
-    <body>
-      <header class="top">
-        <div class="wrap">
-          <a class="brand" href={user ? "/dashboard" : "/"}>
-            <span class="mark">P</span> Pundit
-          </a>
-          <nav class="links">
-            {user ? (
-              <>
-                <a href="/dashboard">Leagues</a>
-                <a href="/channels">Channels</a>
-                <form class="inline" method="post" action="/logout">
-                  <button type="submit">Log out</button>
-                </form>
-              </>
-            ) : (
-              <>
-                <a href="/login">Log in</a>
-                <a class="btn primary sm" href="/signup">
-                  Sign up free
-                </a>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
-      <main>
-        <div class="wrap">
-          {flash ? <div class={`flash ${flash.kind}`}>{flash.text}</div> : null}
-          {children}
-        </div>
-      </main>
-      <footer class="site">
-        <div class="wrap">
-          Pundit — the weekly bulletin for your Fantasy Premier League mini-league. Not affiliated with the
-          Premier League.
-        </div>
-      </footer>
-    </body>
-  </html>
-);
+/* added for the React app */
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:pre;border:0}
+.btn[disabled],.btn[aria-busy=true]{opacity:.6;cursor:progress}
+.center{text-align:center}
+.narrow{max-width:420px;margin:24px auto}
+.toast{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);max-width:calc(100% - 32px);z-index:10;box-shadow:var(--shadow)}
+.err-text{color:var(--danger);font-size:14px;margin:6px 0 0}
