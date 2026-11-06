@@ -1,0 +1,10 @@
+# generated or vendored
+client/dist/
+dist-cli/
+coverage/
+data/
+package-lock.json
+# recorded FPL API responses: keep byte-for-byte as fetched
+test/fixtures/
+# binary-ish assets
+src/web/static/
