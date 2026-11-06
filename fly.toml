@@ -10,7 +10,7 @@ primary_region = "lhr"
   NODE_ENV = "production"
   PORT = "3000"
   DATABASE_PATH = "/data/app.db"
-  APP_URL = "https://pundit-bulletin.fly.dev"
+  APP_URL = "https://pundit.chat"
   TRUST_PROXY = "true"
 
 [mounts]
