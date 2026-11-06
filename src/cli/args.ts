@@ -172,8 +172,9 @@ export function parseCli(argv: string[]): CliAction {
   };
 }
 
+// api.whatsapp.com, not wa.me: wa.me's redirect turns emoji into "�" (see src/delivery/whatsapp.ts).
 export const whatsappShareUrl = (text: string): string =>
-  `https://wa.me/?text=${encodeURIComponent(text)}`;
+  `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
 
 /** Candidate clipboard commands for a platform, tried in order. */
 export function clipboardCommands(platform: NodeJS.Platform): Array<[cmd: string, args: string[]]> {

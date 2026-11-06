@@ -19,7 +19,7 @@ export type ReportKind = "gameweek" | "monthly" | "standings";
 
 /** Formats a report can be rendered to. */
 export type RenderFormat =
-  | "whatsapp" // *bold*, plain text, emoji — also used for the wa.me share link
+  | "whatsapp" // *bold*, plain text, emoji — also used for the WhatsApp share link
   | "telegram" // Telegram HTML parse_mode (<b>, escaped &<>)
   | "discord" // Discord markdown (**bold**), escaped
   | "plain" // no markup at all

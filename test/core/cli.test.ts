@@ -67,8 +67,8 @@ describe("parseCli", () => {
 });
 
 describe("platform helpers", () => {
-  it("builds a wa.me share link", () => {
-    expect(whatsappShareUrl("*GW9* & co\nline 2")).toBe("https://wa.me/?text=*GW9*%20%26%20co%0Aline%202");
+  it("builds a WhatsApp share link", () => {
+    expect(whatsappShareUrl("*GW9* & co\nline 2")).toBe("https://api.whatsapp.com/send?text=*GW9*%20%26%20co%0Aline%202");
   });
 
   it("picks clipboard tools per platform", () => {
