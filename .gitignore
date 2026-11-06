@@ -133,3 +133,6 @@ node_modules/
 data/
 *.db
 *.db-*
+
+# Built CLI package (npm run build:cli)
+dist-cli/

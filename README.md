@@ -33,8 +33,9 @@ React app (port 5173, with hot reload). Open the Vite one. It forwards API calls
 There's also a `pundit` command that works without the web app:
 
 ```sh
-npm link                                  # from this repo, for now
-# coming soon: npm i -g pundit-cli  /  brew install gwionrob/tap/pundit
+npx pundit-cli gameweek <league>          # no install
+npm i -g pundit-cli                       # or install it
+brew install gwionrob/tap/pundit          # or with Homebrew
 ```
 
 ```sh
@@ -90,7 +91,33 @@ devtools show every API call's cached data. For the server, `console.log` or run
 
 ## Deploying
 
-It's a single Node process with a SQLite file, so any host with a persistent disk works
-(Fly.io, Railway, Render, a small VPS). Run `npm run build`, then `npm start`. In production
-the Hono server also serves the built React app. Set a real `SESSION_SECRET` and `APP_URL`,
-point `DATABASE_PATH` at the persistent volume, and set `TRUST_PROXY=true` behind the host's proxy.
+It's a single Node process with a SQLite file, and in production the Hono server also serves the
+built React app. The `Dockerfile` works on any host with a persistent disk.
+
+**Fly.io** (config in `fly.toml`: one always-on machine in London with a 1 GB volume at `/data`):
+
+```sh
+fly apps create pundit-bulletin
+fly volumes create pundit_data --region lhr --size 1
+fly secrets set SESSION_SECRET=$(openssl rand -hex 32)
+# optional: fly secrets set TELEGRAM_BOT_TOKEN=… TELEGRAM_BOT_USERNAME=… RESEND_API_KEY=…
+fly deploy
+```
+
+Elsewhere: run `npm run build`, then `npm start`. Set a real `SESSION_SECRET` and `APP_URL`, point
+`DATABASE_PATH` at the persistent volume, and set `TRUST_PROXY=true` behind the host's proxy.
+
+## Releasing the CLI
+
+```sh
+npm version patch                 # bump the version
+npm run build:cli                 # bundles to dist-cli/ (single file, no dependencies)
+npm publish ./dist-cli
+```
+
+Then update `url` and `sha256` in the Homebrew formula (`gwionrob/homebrew-tap`, `Formula/pundit.rb`).
+
+## Licence
+
+The `pundit` CLI (the `pundit-cli` npm package) is [MIT licensed](LICENSE-CLI).
+Everything else in this repository, including the web app, is © Gwion Robertson, all rights reserved.
