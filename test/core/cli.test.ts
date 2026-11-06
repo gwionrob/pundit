@@ -21,9 +21,16 @@ const usage = (argv: string[]) => {
 describe("parseCli", () => {
   it("parses a gameweek command with defaults", () => {
     expect(parseCli(["gameweek", "340312"])).toEqual({
-      kind: "report", command: "gameweek", leagueId: 340312,
-      gameweek: undefined, month: undefined, year: undefined, top: undefined,
-      format: undefined, copy: false, whatsapp: false,
+      kind: "report",
+      command: "gameweek",
+      leagueId: 340312,
+      gameweek: undefined,
+      month: undefined,
+      year: undefined,
+      top: undefined,
+      format: undefined,
+      copy: false,
+      whatsapp: false,
     });
   });
 
@@ -32,9 +39,21 @@ describe("parseCli", () => {
   });
 
   it("accepts league URLs and command flags in any order", () => {
-    expect(parseCli(["--month", "10", "monthly", "https://fantasy.premierleague.com/leagues/340312/standings/c", "--year", "2026", "--copy"]))
-      .toMatchObject({ command: "monthly", leagueId: 340312, month: 10, year: 2026, copy: true });
-    expect(parseCli(["standings", "1", "--top", "5", "--format", "discord"])).toMatchObject({ top: 5, format: "discord" });
+    expect(
+      parseCli([
+        "--month",
+        "10",
+        "monthly",
+        "https://fantasy.premierleague.com/leagues/340312/standings/c",
+        "--year",
+        "2026",
+        "--copy",
+      ]),
+    ).toMatchObject({ command: "monthly", leagueId: 340312, month: 10, year: 2026, copy: true });
+    expect(parseCli(["standings", "1", "--top", "5", "--format", "discord"])).toMatchObject({
+      top: 5,
+      format: "discord",
+    });
     expect(parseCli(["gameweek", "1", "--gw", "9", "--whatsapp"])).toMatchObject({ gameweek: 9, whatsapp: true });
   });
 
@@ -73,7 +92,9 @@ describe("parseCli", () => {
 
 describe("platform helpers", () => {
   it("builds a WhatsApp share link", () => {
-    expect(whatsappShareUrl("*GW9* & co\nline 2")).toBe("https://api.whatsapp.com/send?text=*GW9*%20%26%20co%0Aline%202");
+    expect(whatsappShareUrl("*GW9* & co\nline 2")).toBe(
+      "https://api.whatsapp.com/send?text=*GW9*%20%26%20co%0Aline%202",
+    );
   });
 
   it("picks clipboard tools per platform", () => {
@@ -95,25 +116,47 @@ describe("resolveOutput", () => {
   const plain = { copy: false, whatsapp: false };
 
   it("on screen: readable terminal format with colour and the share tip", () => {
-    expect(resolveOutput(plain, tty)).toEqual({ stdout: { format: "terminal", color: true }, share: "whatsapp", tip: true });
+    expect(resolveOutput(plain, tty)).toEqual({
+      stdout: { format: "terminal", color: true },
+      share: "whatsapp",
+      tip: true,
+    });
   });
 
   it("piped: WhatsApp markup, no colour, no tip", () => {
-    expect(resolveOutput(plain, pipe)).toEqual({ stdout: { format: "whatsapp", color: false }, share: "whatsapp", tip: false });
+    expect(resolveOutput(plain, pipe)).toEqual({
+      stdout: { format: "whatsapp", color: false },
+      share: "whatsapp",
+      tip: false,
+    });
   });
 
   it("respects NO_COLOR and FORCE_COLOR", () => {
     expect(resolveOutput(plain, { ...tty, noColor: true }).stdout).toEqual({ format: "terminal", color: false });
-    expect(resolveOutput({ ...plain, format: "terminal" }, { ...pipe, forceColor: true }).stdout).toEqual({ format: "terminal", color: true });
+    expect(resolveOutput({ ...plain, format: "terminal" }, { ...pipe, forceColor: true }).stdout).toEqual({
+      format: "terminal",
+      color: true,
+    });
   });
 
   it("an explicit --format wins on screen", () => {
-    expect(resolveOutput({ ...plain, format: "discord" }, tty)).toMatchObject({ stdout: { format: "discord" }, tip: false });
+    expect(resolveOutput({ ...plain, format: "discord" }, tty)).toMatchObject({
+      stdout: { format: "discord" },
+      tip: false,
+    });
   });
 
   it("--copy / --whatsapp: share WhatsApp text, preview it readably on screen only", () => {
-    expect(resolveOutput({ copy: true, whatsapp: false }, tty)).toEqual({ stdout: { format: "terminal", color: true }, share: "whatsapp", tip: false });
-    expect(resolveOutput({ copy: false, whatsapp: true }, pipe)).toEqual({ stdout: null, share: "whatsapp", tip: false });
+    expect(resolveOutput({ copy: true, whatsapp: false }, tty)).toEqual({
+      stdout: { format: "terminal", color: true },
+      share: "whatsapp",
+      tip: false,
+    });
+    expect(resolveOutput({ copy: false, whatsapp: true }, pipe)).toEqual({
+      stdout: null,
+      share: "whatsapp",
+      tip: false,
+    });
     expect(resolveOutput({ copy: true, whatsapp: false, format: "telegram" }, tty).share).toBe("telegram");
   });
 });

@@ -32,7 +32,9 @@ describe("whatsapp share link", () => {
   it("encodes text for the WhatsApp share link", () => {
     const url = whatsappShareUrl("*GW9* winner & loser\nline 2 😀");
     expect(url.startsWith("https://api.whatsapp.com/send?text=")).toBe(true);
-    expect(decodeURIComponent(url.slice("https://api.whatsapp.com/send?text=".length))).toBe("*GW9* winner & loser\nline 2 😀");
+    expect(decodeURIComponent(url.slice("https://api.whatsapp.com/send?text=".length))).toBe(
+      "*GW9* winner & loser\nline 2 😀",
+    );
   });
   it("footer links to the report", () => {
     expect(reportFooter("https://x.app/", "abc")).toContain("https://x.app/r/abc");
@@ -65,7 +67,9 @@ describe("parseStartCommand", () => {
 
 describe("telegram handleUpdate", () => {
   const okFetch = () =>
-    vi.fn(async () => new Response(JSON.stringify({ ok: true, result: {} }), { status: 200 })) as unknown as typeof fetch;
+    vi.fn(
+      async () => new Response(JSON.stringify({ ok: true, result: {} }), { status: 200 }),
+    ) as unknown as typeof fetch;
 
   it("links a group with a valid code and deactivates when kicked", async () => {
     const repo = memRepo();
@@ -131,7 +135,11 @@ describe("deliver", () => {
     const [mail] = t.senders.email.mock.calls[0]!;
     expect(mail.html).toContain("https://api.whatsapp.com/send?text=");
     expect(await deliverToLeagueChannels(t.deps, t.stored)).toEqual({ sent: 0, skipped: 3, failed: 0 });
-    expect(await deliverToLeagueChannels(t.deps, t.stored, { force: true })).toEqual({ sent: 3, skipped: 0, failed: 0 });
+    expect(await deliverToLeagueChannels(t.deps, t.stored, { force: true })).toEqual({
+      sent: 3,
+      skipped: 0,
+      failed: 0,
+    });
   });
 
   it("records failures, retries them, and deactivates gone Telegram chats", async () => {

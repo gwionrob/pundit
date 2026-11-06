@@ -43,7 +43,16 @@ export type { Report, ReportKind };
 
 export interface ApiError {
   error: string; // human-readable, safe to show in the UI
-  code?: "unauthorized" | "forbidden" | "not_found" | "conflict" | "limit" | "validation" | "rate_limited" | "fpl_updating" | "fpl_error";
+  code?:
+    | "unauthorized"
+    | "forbidden"
+    | "not_found"
+    | "conflict"
+    | "limit"
+    | "validation"
+    | "rate_limited"
+    | "fpl_updating"
+    | "fpl_error";
 }
 
 // ---------- auth ----------
@@ -130,7 +139,14 @@ export interface ReportResponse {
   createdAt: string;
   owner?: {
     leagueId: number;
-    deliveries: Array<{ channelId: number; label: string; kind: ChannelKind; status: "sent" | "failed"; error: string | null; at: string }>;
+    deliveries: Array<{
+      channelId: number;
+      label: string;
+      kind: ChannelKind;
+      status: "sent" | "failed";
+      error: string | null;
+      at: string;
+    }>;
   };
 }
 

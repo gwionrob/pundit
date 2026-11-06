@@ -59,7 +59,10 @@ export async function sendReportToChannel(deps: DeliveryDeps, stored: StoredRepo
     case "telegram":
       return deps.senders.telegram(Number(channel.config.chatId), renderReport(stored.report, "telegram", { footer }));
     case "discord":
-      return deps.senders.discord(String(channel.config.webhookUrl), renderReport(stored.report, "discord", { footer }));
+      return deps.senders.discord(
+        String(channel.config.webhookUrl),
+        renderReport(stored.report, "discord", { footer }),
+      );
     case "email":
       return deps.senders.email(buildEmail(deps.appUrl, stored, String(channel.config.email)));
   }

@@ -78,7 +78,12 @@ export function errorResponse(c: Context, e: unknown) {
   if (e instanceof FplError) {
     switch (e.code) {
       case "not_found":
-        return apiError(c, 404, "We couldn't find that league. Check the ID. Only classic leagues are supported.", "not_found");
+        return apiError(
+          c,
+          404,
+          "We couldn't find that league. Check the ID. Only classic leagues are supported.",
+          "not_found",
+        );
       case "updating":
         return apiError(c, 503, "The FPL game is updating right now. Try again in a few minutes.", "fpl_updating");
       case "rate_limited":

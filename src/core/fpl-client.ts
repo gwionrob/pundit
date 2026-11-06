@@ -1,11 +1,4 @@
-import type {
-  RawBootstrap,
-  RawEntryHistory,
-  RawLive,
-  RawPicks,
-  RawStandings,
-  RawStandingsPage,
-} from "./fpl-types.ts";
+import type { RawBootstrap, RawEntryHistory, RawLive, RawPicks, RawStandings, RawStandingsPage } from "./fpl-types.ts";
 
 const BASE_URL = "https://fantasy.premierleague.com/api";
 const USER_AGENT = "Pundit/0.1";
@@ -164,7 +157,9 @@ export class FplClient {
       } catch (err) {
         if (!(err instanceof FplError)) throw err;
         lastError = err;
-        const retryable = err.code === "rate_limited" || err.code === "network" ||
+        const retryable =
+          err.code === "rate_limited" ||
+          err.code === "network" ||
           (err.code === "bad_response" && (err.status ?? 0) >= 500);
         if (!retryable) throw err;
       }

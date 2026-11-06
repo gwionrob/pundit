@@ -54,10 +54,10 @@ turn colour off. `pundit --help` lists everything.
 
 ### Optional integrations
 
-| Feature | Env vars | Setup |
-| --- | --- | --- |
+| Feature               | Env vars                                      | Setup                                                                                                              |
+| --------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Telegram auto-posting | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` | Create a bot with [@BotFather](https://t.me/BotFather). The app long-polls, so no webhook or public URL is needed. |
-| Email notifications | `RESEND_API_KEY`, `EMAIL_FROM` | [Resend](https://resend.com) account with a verified domain. Without a key, emails are logged to the console. |
+| Email notifications   | `RESEND_API_KEY`, `EMAIL_FROM`                | [Resend](https://resend.com) account with a verified domain. Without a key, emails are logged to the console.      |
 
 ## How it works
 

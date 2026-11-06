@@ -82,7 +82,9 @@ export function authRoutes(ctx: WebContext) {
     }
     const user = repo.getUserByEmail(email);
     // Hash anyway for unknown emails so response time doesn't reveal which accounts exist.
-    const ok = user ? await verifyPassword(password, user.password_hash) : await hashPassword(password).then(() => false);
+    const ok = user
+      ? await verifyPassword(password, user.password_hash)
+      : await hashPassword(password).then(() => false);
     if (!user || !ok) return apiError(c, 401, "Wrong email or password.", "unauthorized");
     logIn(c, user);
     return c.json(me(user));

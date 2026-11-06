@@ -71,7 +71,11 @@ function DeliveryPanel({ data }: { data: ReportResponse }) {
         onClick={() => deliver.mutate()}
         disabled={deliver.isPending}
       >
-        {deliver.isPending ? "Sending…" : deliveries.length ? "Post again to linked channels" : "Send to linked channels"}
+        {deliver.isPending
+          ? "Sending…"
+          : deliveries.length
+            ? "Post again to linked channels"
+            : "Send to linked channels"}
       </button>
     </div>
   );

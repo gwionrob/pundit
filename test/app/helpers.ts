@@ -18,7 +18,16 @@ export function fakeReport(over: Partial<Report> = {}): Report {
 }
 
 export function ev(id: number, deadline: string, extra: Partial<GameEvent> = {}): GameEvent {
-  return { id, name: `Gameweek ${id}`, deadline, finished: true, dataChecked: true, isCurrent: false, isNext: false, ...extra };
+  return {
+    id,
+    name: `Gameweek ${id}`,
+    deadline,
+    finished: true,
+    dataChecked: true,
+    isCurrent: false,
+    isNext: false,
+    ...extra,
+  };
 }
 
 export function state(events: GameEvent[], lastCompletedEvent: number | null): GameState {

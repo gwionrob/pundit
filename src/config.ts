@@ -2,8 +2,7 @@ import { z } from "zod";
 
 const DEFAULT_SECRET = "dev-insecure-secret-change-me";
 
-const emptyToUndefined = (v: unknown) =>
-  typeof v === "string" && v.trim() === "" ? undefined : v;
+const emptyToUndefined = (v: unknown) => (typeof v === "string" && v.trim() === "" ? undefined : v);
 
 const schema = z.object({
   NODE_ENV: z.string().default("development"),
@@ -21,15 +20,15 @@ const schema = z.object({
   ),
   TRUST_PROXY: z.preprocess(
     emptyToUndefined,
-    z.enum(["true", "false", "1", "0"]).default("false").transform((v) => v === "true" || v === "1"),
+    z
+      .enum(["true", "false", "1", "0"])
+      .default("false")
+      .transform((v) => v === "true" || v === "1"),
   ),
   RESEND_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
   /** Comma-separated emails of accounts that can open /admin. Empty = no admin page. */
   ADMIN_EMAILS: z.preprocess(emptyToUndefined, z.string().default("")),
-  EMAIL_FROM: z.preprocess(
-    emptyToUndefined,
-    z.string().default("Pundit <pundit@example.com>"),
-  ),
+  EMAIL_FROM: z.preprocess(emptyToUndefined, z.string().default("Pundit <pundit@example.com>")),
 });
 
 export type Config = z.infer<typeof schema> & {

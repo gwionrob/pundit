@@ -71,7 +71,12 @@ describe("runTick", () => {
     expect(t.core.buildGameweekReport).toHaveBeenCalledWith(111, { gameweek: 9 });
     expect(t.core.buildMonthlyReport).toHaveBeenCalledWith(222, { month: 10, year: 2026 });
     expect(t.deliver).toHaveBeenCalledTimes(4);
-    expect(t.repo.listReports(t.l1.id).map((r) => r.kind).sort()).toEqual(["gameweek", "monthly"]);
+    expect(
+      t.repo
+        .listReports(t.l1.id)
+        .map((r) => r.kind)
+        .sort(),
+    ).toEqual(["gameweek", "monthly"]);
     expect(t.repo.getState(LAST_GW_KEY)).toBe("9");
     // idempotent
     expect((await runTick(t.deps)).status).toBe("up-to-date");

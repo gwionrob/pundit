@@ -49,7 +49,12 @@ export function startSession(repo: Repo, userId: number, secret: string, now = n
   return { token, expires };
 }
 
-export function userForToken(repo: Repo, token: string | undefined, secret: string, now = new Date()): User | undefined {
+export function userForToken(
+  repo: Repo,
+  token: string | undefined,
+  secret: string,
+  now = new Date(),
+): User | undefined {
   if (!token) return undefined;
   return repo.getSessionUser(hashToken(token, secret), now);
 }

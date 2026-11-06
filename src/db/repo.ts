@@ -198,9 +198,7 @@ export class Repo {
     return toUser(row);
   }
   getUserByEmail(email: string): User | undefined {
-    const r = this.db.prepare("SELECT * FROM users WHERE email = ?").get(email.trim().toLowerCase()) as
-      | Row
-      | undefined;
+    const r = this.db.prepare("SELECT * FROM users WHERE email = ?").get(email.trim().toLowerCase()) as Row | undefined;
     return r ? toUser(r) : undefined;
   }
   getUser(id: number): User | undefined {
@@ -241,9 +239,7 @@ export class Repo {
     return Number(r.n);
   }
   getLeague(userId: number, id: number): League | undefined {
-    const r = this.db.prepare("SELECT * FROM leagues WHERE id = ? AND user_id = ?").get(id, userId) as
-      | Row
-      | undefined;
+    const r = this.db.prepare("SELECT * FROM leagues WHERE id = ? AND user_id = ?").get(id, userId) as Row | undefined;
     return r ? toLeague(r) : undefined;
   }
   getLeagueById(id: number): League | undefined {
@@ -274,11 +270,7 @@ export class Repo {
     for (const ch of this.listChannels(user.id)) this.linkLeagueChannel(league.id, ch.id);
     return league;
   }
-  updateLeagueSettings(
-    userId: number,
-    id: number,
-    s: { gameweek_enabled: boolean; monthly_enabled: boolean },
-  ): void {
+  updateLeagueSettings(userId: number, id: number, s: { gameweek_enabled: boolean; monthly_enabled: boolean }): void {
     this.db
       .prepare("UPDATE leagues SET gameweek_enabled = ?, monthly_enabled = ? WHERE id = ? AND user_id = ?")
       .run(s.gameweek_enabled ? 1 : 0, s.monthly_enabled ? 1 : 0, id, userId);
@@ -302,9 +294,7 @@ export class Repo {
     ).map(toChannel);
   }
   getChannel(userId: number, id: number): Channel | undefined {
-    const r = this.db.prepare("SELECT * FROM channels WHERE id = ? AND user_id = ?").get(id, userId) as
-      | Row
-      | undefined;
+    const r = this.db.prepare("SELECT * FROM channels WHERE id = ? AND user_id = ?").get(id, userId) as Row | undefined;
     return r ? toChannel(r) : undefined;
   }
   findChannel(userId: number, kind: ChannelKind, predicate: (c: Channel) => boolean): Channel | undefined {
@@ -442,7 +432,9 @@ export class Repo {
   createTelegramCode(userId: number, ttlMinutes = 30): string {
     const code = randomBytes(9).toString("base64url"); // 12 chars, [A-Za-z0-9_-] — valid for t.me start param
     const expires = new Date(Date.now() + ttlMinutes * 60_000).toISOString();
-    this.db.prepare("INSERT INTO telegram_link_codes (code, user_id, expires_at) VALUES (?, ?, ?)").run(code, userId, expires);
+    this.db
+      .prepare("INSERT INTO telegram_link_codes (code, user_id, expires_at) VALUES (?, ?, ?)")
+      .run(code, userId, expires);
     return code;
   }
   /** Consumes a code, returning its user id if valid and unexpired. */
@@ -467,7 +459,10 @@ export class Repo {
       reportsSince: one("SELECT COUNT(*) AS n FROM reports WHERE created_at >= ?", sinceIso),
       channels: one("SELECT COUNT(*) AS n FROM channels WHERE active = 1"),
       deliveriesSent: one("SELECT COUNT(*) AS n FROM deliveries WHERE status = 'sent' AND created_at >= ?", sinceIso),
-      deliveriesFailed: one("SELECT COUNT(*) AS n FROM deliveries WHERE status = 'failed' AND created_at >= ?", sinceIso),
+      deliveriesFailed: one(
+        "SELECT COUNT(*) AS n FROM deliveries WHERE status = 'failed' AND created_at >= ?",
+        sinceIso,
+      ),
     };
   }
   adminRecentUsers(limit: number): AdminUserRow[] {
@@ -554,7 +549,9 @@ export class Repo {
   }
   setState(key: string, value: string): void {
     this.db
-      .prepare("INSERT INTO job_state (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value")
+      .prepare(
+        "INSERT INTO job_state (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value",
+      )
       .run(key, value);
   }
 }

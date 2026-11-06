@@ -25,7 +25,10 @@ const escapeTelegram = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&l
 
 /** Apply `fn` to the non-URL parts of `s`, leaving URLs untouched so links still work. */
 const outsideUrls = (fn: (s: string) => string) => (s: string) =>
-  s.split(/(https?:\/\/\S+)/).map((part, i) => (i % 2 ? part : fn(part))).join("");
+  s
+    .split(/(https?:\/\/\S+)/)
+    .map((part, i) => (i % 2 ? part : fn(part)))
+    .join("");
 
 // Discord markdown specials (inline): \ * _ ~ ` | >
 const escapeDiscord = outsideUrls((s) => s.replace(/([\\*_~`|>])/g, "\\$1"));
@@ -35,10 +38,7 @@ const escapeDiscord = outsideUrls((s) => s.replace(/([\\*_~`|>])/g, "\\$1"));
 const WA_LOOKALIKE: Record<string, string> = { "*": "∗", _: "ˍ", "~": "∼", "`": "ˋ" };
 const sanitiseWhatsapp = outsideUrls((s) => s.replace(/[*_~`]/g, (c) => WA_LOOKALIKE[c]!));
 
-const textMarkup = (opts: {
-  text: (s: string) => string;
-  bold: (s: string) => string;
-}): Markup => ({
+const textMarkup = (opts: { text: (s: string) => string; bold: (s: string) => string }): Markup => ({
   text: opts.text,
   bold: opts.bold,
   heading: (s) => opts.bold(opts.text(s)),
@@ -92,9 +92,7 @@ const MARKUPS: Record<Exclude<RenderFormat, "terminal">, Markup> = {
 };
 
 function renderSegments(segments: Segment[], m: Markup): string {
-  return segments
-    .map((seg) => (typeof seg === "string" ? m.text(seg) : m.bold(m.text(seg.bold))))
-    .join("");
+  return segments.map((seg) => (typeof seg === "string" ? m.text(seg) : m.bold(m.text(seg.bold)))).join("");
 }
 
 export function renderReport(report: Report, format: RenderFormat, opts: RenderOptions = {}): string {
@@ -105,7 +103,10 @@ export function renderReport(report: Report, format: RenderFormat, opts: RenderO
   const blocks = [
     header.join("\n"),
     ...report.sections.map((s) =>
-      m.section(m.heading(s.heading), s.lines.map((l) => m.line(renderSegments(l.segments, m)))),
+      m.section(
+        m.heading(s.heading),
+        s.lines.map((l) => m.line(renderSegments(l.segments, m))),
+      ),
     ),
   ];
   if (opts.footer) blocks.push(m.line(m.text(opts.footer)));

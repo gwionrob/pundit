@@ -192,7 +192,10 @@ function EmailCard({ channels, onStatus }: { channels: ChannelDto[]; onStatus: O
       { enabled: !emailOn },
       {
         onSuccess: () =>
-          onStatus({ kind: "ok", text: emailOn ? "Email notifications turned off." : `We'll email ${email} for new bulletins.` }),
+          onStatus({
+            kind: "ok",
+            text: emailOn ? "Email notifications turned off." : `We'll email ${email} for new bulletins.`,
+          }),
         onError: (err) => onStatus({ kind: "err", text: errorMessage(err) }),
       },
     );
@@ -201,7 +204,12 @@ function EmailCard({ channels, onStatus }: { channels: ChannelDto[]; onStatus: O
     <div className="card">
       <h2>Email</h2>
       <p className="small">Get an email with the share button whenever a new bulletin is ready.</p>
-      <button className={`btn ${emailOn ? "" : "primary"}`} type="button" onClick={onToggle} disabled={toggle.isPending}>
+      <button
+        className={`btn ${emailOn ? "" : "primary"}`}
+        type="button"
+        onClick={onToggle}
+        disabled={toggle.isPending}
+      >
         {emailOn ? "Turn off email" : `Email me at ${email}`}
       </button>
     </div>

@@ -41,11 +41,21 @@ function setup(env: Record<string, string> = {}, opts: { spaDir?: string | null 
       if (id === 503) throw new FplError("updating", "updating", 503);
       return { id, name: `League ${id}`, memberCount: 10 };
     }),
-    buildGameweekReport: vi.fn(async (id: number): Promise<Report> => fakeReport({ leagueId: id, leagueName: `League ${id}` })),
-    buildMonthlyReport: vi.fn(async (id: number) => fakeReport({ kind: "monthly", leagueId: id, leagueName: `League ${id}`, period: { month: 10, year: 2026 } })),
-    buildStandingsReport: vi.fn(async (id: number) => fakeReport({ kind: "standings", leagueId: id, leagueName: `League ${id}`, period: {} })),
+    buildGameweekReport: vi.fn(async (id: number): Promise<Report> =>
+      fakeReport({ leagueId: id, leagueName: `League ${id}` }),
+    ),
+    buildMonthlyReport: vi.fn(async (id: number) =>
+      fakeReport({ kind: "monthly", leagueId: id, leagueName: `League ${id}`, period: { month: 10, year: 2026 } }),
+    ),
+    buildStandingsReport: vi.fn(async (id: number) =>
+      fakeReport({ kind: "standings", leagueId: id, leagueName: `League ${id}`, period: {} }),
+    ),
   };
-  const senders: Senders = { telegram: vi.fn(async () => {}), discord: vi.fn(async () => {}), email: vi.fn(async () => {}) };
+  const senders: Senders = {
+    telegram: vi.fn(async () => {}),
+    discord: vi.fn(async () => {}),
+    email: vi.fn(async () => {}),
+  };
   const app = createApp({ config, repo, senders, core, spaDir: opts.spaDir ?? null });
 
   /** A browser-like client with its own cookie jar. */
@@ -180,7 +190,14 @@ describe("admin dashboard", () => {
     expect(res.headers.get("cache-control")).toBe("no-store");
     const raw = await res.text();
     const body = JSON.parse(raw) as AdminResponse;
-    expect(body.counts).toMatchObject({ users: 2, leagues: 1, fplLeagues: 1, reports: 1, channels: 1, deliveriesFailed: 1 });
+    expect(body.counts).toMatchObject({
+      users: 2,
+      leagues: 1,
+      fplLeagues: 1,
+      reports: 1,
+      channels: 1,
+      deliveriesFailed: 1,
+    });
     expect(body.users.map((u) => u.email).sort()).toEqual(["ann@example.com", ADMIN]);
     expect(body.leagues[0]).toMatchObject({ fplLeagueId: 105831, owner: "ann@example.com" });
     expect(body.reports[0]).toMatchObject({ title: "Gameweek 9 Bulletin", league: "The Sunday Lot" });
@@ -245,10 +262,15 @@ describe("CSRF", () => {
   it("blocks non-GET requests from a foreign origin or without an origin", async () => {
     const { client } = setup();
     const c = client();
-    const foreign = await c.req("/api/signup", { json: { email: "a@b.com", password: PASSWORD }, origin: "https://evil.example" });
+    const foreign = await c.req("/api/signup", {
+      json: { email: "a@b.com", password: PASSWORD },
+      origin: "https://evil.example",
+    });
     expect(foreign.status).toBe(403);
     expect(await foreign.json()).toMatchObject({ code: "forbidden" });
-    expect((await c.req("/api/signup", { json: { email: "a@b.com", password: PASSWORD }, origin: null })).status).toBe(403);
+    expect((await c.req("/api/signup", { json: { email: "a@b.com", password: PASSWORD }, origin: null })).status).toBe(
+      403,
+    );
   });
 
   it("behind a TLS proxy, accepts the request's own https origin (X-Forwarded-Proto)", async () => {
@@ -290,9 +312,16 @@ describe("leagues", () => {
     const { client } = setup();
     const a = client();
     await a.signup();
-    const add = await a.req("/api/leagues", { json: { league: "https://fantasy.premierleague.com/leagues/111/standings/c" } });
+    const add = await a.req("/api/leagues", {
+      json: { league: "https://fantasy.premierleague.com/leagues/111/standings/c" },
+    });
     expect(add.status).toBe(201);
-    expect((await add.json()) as LeagueSummary).toMatchObject({ fplLeagueId: 111, name: "League 111", gameweekEnabled: true, latestReports: [] });
+    expect((await add.json()) as LeagueSummary).toMatchObject({
+      fplLeagueId: 111,
+      name: "League 111",
+      gameweekEnabled: true,
+      latestReports: [],
+    });
 
     expect((await a.req("/api/leagues", { json: { league: "111" } })).status).toBe(409);
     const bad = await a.req("/api/leagues", { json: { league: "not a league" } });
@@ -313,7 +342,8 @@ describe("leagues", () => {
     const { client, core } = setup();
     const a = client();
     await a.signup();
-    for (const id of [1, 2, 3]) expect((await a.req("/api/leagues", { json: { league: String(id) } })).status).toBe(201);
+    for (const id of [1, 2, 3])
+      expect((await a.req("/api/leagues", { json: { league: String(id) } })).status).toBe(201);
     const calls = vi.mocked(core.getLeagueInfo).mock.calls.length;
     const over = await a.req("/api/leagues", { json: { league: "4" } });
     expect(over.status).toBe(409);
@@ -332,9 +362,16 @@ describe("leagues", () => {
     expect(detail.channelIds).toHaveLength(1); // new channels link to existing leagues
     expect(detail.reports).toEqual([]);
 
-    const patched = await a.req(`/api/leagues/${id}`, { method: "PATCH", json: { monthlyEnabled: false, channelIds: [] } });
+    const patched = await a.req(`/api/leagues/${id}`, {
+      method: "PATCH",
+      json: { monthlyEnabled: false, channelIds: [] },
+    });
     expect(patched.status).toBe(200);
-    expect((await patched.json()) as LeagueDetail).toMatchObject({ gameweekEnabled: true, monthlyEnabled: false, channelIds: [] });
+    expect((await patched.json()) as LeagueDetail).toMatchObject({
+      gameweekEnabled: true,
+      monthlyEnabled: false,
+      channelIds: [],
+    });
 
     expect((await a.req(`/api/leagues/${id}`, { method: "PATCH", json: { monthlyEnabled: "no" } })).status).toBe(422);
     expect(await (await a.req(`/api/leagues/${id}`, { method: "DELETE" })).json()).toEqual({ ok: true });
@@ -422,7 +459,9 @@ describe("reports", () => {
     await other.signup("other@example.com");
     expect((await other.req(`/api/reports/${slug}/deliver`, { method: "POST" })).status).toBe(404);
 
-    const delivered = (await (await a.req(`/api/reports/${slug}/deliver`, { method: "POST" })).json()) as ReportResponse;
+    const delivered = (await (
+      await a.req(`/api/reports/${slug}/deliver`, { method: "POST" })
+    ).json()) as ReportResponse;
     expect(senders.email).toHaveBeenCalledTimes(1);
     expect(delivered.owner?.deliveries).toEqual([
       expect.objectContaining({ kind: "email", label: "Email (ann@example.com)", status: "sent", error: null }),
@@ -440,11 +479,17 @@ describe("channels", () => {
     const { client } = setup();
     const a = client();
     await a.signup();
-    const on = (await (await a.req("/api/channels/email", { method: "PUT", json: { enabled: true } })).json()) as ChannelsResponse;
-    expect(on.channels).toEqual([expect.objectContaining({ kind: "email", label: "Email (ann@example.com)", active: true })]);
+    const on = (await (
+      await a.req("/api/channels/email", { method: "PUT", json: { enabled: true } })
+    ).json()) as ChannelsResponse;
+    expect(on.channels).toEqual([
+      expect.objectContaining({ kind: "email", label: "Email (ann@example.com)", active: true }),
+    ]);
     await a.req("/api/channels/email", { method: "PUT", json: { enabled: true } }); // idempotent
     expect(((await (await a.req("/api/channels")).json()) as ChannelsResponse).channels).toHaveLength(1);
-    const off = (await (await a.req("/api/channels/email", { method: "PUT", json: { enabled: false } })).json()) as ChannelsResponse;
+    const off = (await (
+      await a.req("/api/channels/email", { method: "PUT", json: { enabled: false } })
+    ).json()) as ChannelsResponse;
     expect(off.channels).toEqual([]);
   });
 
@@ -454,7 +499,9 @@ describe("channels", () => {
     await a.signup();
     const url = "https://discord.com/api/webhooks/123/abc";
 
-    expect((await a.req("/api/channels/discord", { json: { webhookUrl: "https://example.com/hook" } })).status).toBe(422);
+    expect((await a.req("/api/channels/discord", { json: { webhookUrl: "https://example.com/hook" } })).status).toBe(
+      422,
+    );
 
     vi.mocked(senders.discord).mockRejectedValueOnce(new Error("404 Unknown Webhook"));
     const failed = await a.req("/api/channels/discord", { json: { webhookUrl: url } });
@@ -472,7 +519,9 @@ describe("channels", () => {
     const { client, senders } = setup();
     const a = client();
     await a.signup();
-    const { id } = (await (await a.req("/api/channels/discord", { json: { webhookUrl: "https://discord.com/api/webhooks/1/x" } })).json()) as ChannelDto;
+    const { id } = (await (
+      await a.req("/api/channels/discord", { json: { webhookUrl: "https://discord.com/api/webhooks/1/x" } })
+    ).json()) as ChannelDto;
 
     const b = client();
     await b.signup("b@example.com");
@@ -495,7 +544,9 @@ describe("channels", () => {
     const a = t.client();
     const me = (await (await a.signup()).json()) as MeResponse;
     expect(me.features).toMatchObject({ telegram: true, telegramBotUsername: "PunditBot" });
-    const link = (await (await a.req("/api/channels/telegram/link", { method: "POST" })).json()) as TelegramLinkResponse;
+    const link = (await (
+      await a.req("/api/channels/telegram/link", { method: "POST" })
+    ).json()) as TelegramLinkResponse;
     expect(link.url).toMatch(/^https:\/\/t\.me\/PunditBot\?startgroup=[\w-]+$/);
     expect(Date.parse(link.expiresAt)).toBeGreaterThan(Date.now());
   });
@@ -518,7 +569,9 @@ describe("server-rendered pages", () => {
     const a = client();
     await a.signup();
     const league = (await (await a.req("/api/leagues", { json: { league: "111" } })).json()) as LeagueSummary;
-    const r = (await (await a.req(`/api/leagues/${league.id}/generate`, { json: { kind: "gameweek" } })).json()) as ReportResponse;
+    const r = (await (
+      await a.req(`/api/leagues/${league.id}/generate`, { json: { kind: "gameweek" } })
+    ).json()) as ReportResponse;
 
     const res = await client().req(`/r/${r.slug}`);
     expect(res.status).toBe(200);
@@ -581,7 +634,7 @@ describe("production SPA serving", () => {
     for (const path of ["/dashboard", "/leagues/1", "/login"]) {
       const res = await c.req(path);
       expect(res.status).toBe(200);
-      expect(await res.text()).toContain('<div id=root>');
+      expect(await res.text()).toContain("<div id=root>");
     }
     const asset = await c.req("/assets/app-abc123.js");
     expect(asset.headers.get("content-type")).toContain("javascript");

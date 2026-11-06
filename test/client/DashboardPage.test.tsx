@@ -50,7 +50,9 @@ describe("Dashboard", () => {
     fireEvent.change(await screen.findByLabelText("Add a league"), { target: { value: " 340312 " } });
     fireEvent.click(screen.getByRole("button", { name: "Add league" }));
 
-    expect((await screen.findByRole("alert")).textContent).toBe("FPL is updating right now. Try again in a few minutes.");
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "FPL is updating right now. Try again in a few minutes.",
+    );
     const post = fetchMock.mock.calls.find(([, init]) => init?.method === "POST");
     expect(post?.[1]?.body).toBe(JSON.stringify({ league: "340312" }));
     expect(new Headers(post?.[1]?.headers).get("Content-Type")).toBe("application/json");
