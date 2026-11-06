@@ -61,7 +61,7 @@ turn colour off. `pundit --help` lists everything.
 
 ## How it works
 
-```
+```text
 client/       React app (Vite, React Router, TanStack Query): login, dashboard, league settings,
               channels, in-app bulletins
 src/
